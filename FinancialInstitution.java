@@ -1,45 +1,25 @@
-public class FinancialInstitution{
-    private int userId;
-    private String cardNumber;
-    private String expiryDate;
-    private int cvv;
+import java.util.HashMap;
+import java.util.Map;
 
-    public FinancialInstitution(int userId, String cardNumber, String expiryDate, int cvv){
-        this.userId = userId;
-        this.cardNumber = cardNumber;
-        this.expiryDate = expiryDate;
-        this.cvv = cvv;
+public class FinancialInstitution {
+    private Map<String, PaymentInfo> cardDatabase = new HashMap<>();
+
+    public void addCard(PaymentInfo paymentInfo) {
+        cardDatabase.put(paymentInfo.getCardNumber(), paymentInfo);
     }
 
-    public int getUserId(){
-        return this.userId;
+    public boolean validateCard(String cardNumber, String cvv, String expiryDate) {
+        PaymentInfo card = cardDatabase.get(cardNumber);
+        if (card != null) {
+            return card.getCvv().equals(cvv) && card.getExpiryDate().equals(expiryDate);
+        }
+        return false;
     }
 
-    public void setUserId(int userId){
-        this.userId = userId;
-    }
-
-    public String getCardNumber(){
-        return this.cardNumber;
-    }
-
-    public void setCardNumber(String cardNumber){
-        this.cardNumber = cardNumber;
-    }
-
-    public String getExpiryDate(){
-        return this.expiryDate;
-    }
-
-    public void setExpiryDate(String expiryDate){
-        this.expiryDate = expiryDate;
-    }
-
-    public int getCvv(){
-        return this.cvv;
-    }
-
-    public void setCvv(int cvv){
-        this.cvv = cvv;
+    public boolean processPayment(String cardNumber, double amount) {
+        if (cardDatabase.containsKey(cardNumber)) {
+            return true;
+        }
+        return false;
     }
 }
