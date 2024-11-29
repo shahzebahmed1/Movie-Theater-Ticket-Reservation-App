@@ -50,18 +50,45 @@ public class Database {
     }
 
     public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
-        // Implementation for inserting card details into the database
+        try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
+            String query = "INSERT INTO paymentInfo (cardNumber, cvv, expireDate, cardHolder) VALUES (?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, cardNumber);
+            preparedStatement.setString(2, cvv);
+            preparedStatement.setDate(3, java.sql.Date.valueOf(expiryDate));
+            preparedStatement.setString(4, cardHolderName);
+            int rowsChanged = preparedStatement.executeUpdate();
+            if(rowsChanged>0){
+                System.out.println("Payment information added successfully.");
+            } else {
+                System.out.println("Failed to add payment information.");
+            }
+        }catch(Exception e){
+            System.out.print("something went wrong " + e);
+
+        }
     }
 
-    public boolean validateCard(String cardNumber, String cvv, String expiryDate) {
-        // Implementation for validating card details
-        return true;
+    public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
+        try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
+            String query = "SELECT COUNT(*) FROM paymentInfo WHERE cardNumber = ? && cvv = ? && expiryDate = ? && cardHolder = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, cardNumber);
+            preparedStatement.setString(2, cvv);
+            preparedStatement.setDate(3, java.sql.Date.valueOf(expiryDate));
+            preparedStatement.setString(4, cardHolderName);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                return true;
+            }
+        }catch(Exception e){
+            System.out.println("something went wrong " + e );
+        }
+        return false;
     }
 
-    public boolean cardExists(String cardNumber) {
-        // Implementation for checking if a card exists in the database
-        return true;
-    }
 
     public void getAllMovies() throws SQLException {
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {

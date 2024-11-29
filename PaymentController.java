@@ -6,18 +6,15 @@ public class PaymentController {
     }
 
     public boolean processPayment(String cardNumber, String cvv, String expiryDate, String cardHolderName, double amount) {
-        boolean isValid = financialInstitution.validateCard(cardNumber, cvv, expiryDate);
-
+        boolean isValid = financialInstitution.validateCard(cardNumber, cvv, expiryDate, cardHolderName);
+    
         if (!isValid) {
+            System.out.println("Card validation failed. Payment rejected.");
             return false;
         }
 
-        boolean paymentSuccess = financialInstitution.processPayment(cardNumber, amount);
-        if (paymentSuccess) {
-            return true;
-        } else {
-            return false;
-        }
+        System.out.println("Processing payment of $" + amount + " for card: " + cardNumber);
+        return true; 
     }
 
     public void addCardToFinancialInstitution(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
