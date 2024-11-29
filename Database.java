@@ -43,4 +43,18 @@ public class Database {
     	
     }
 
+    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
+        // Implementation for inserting card details into the database
+    }
+
+    public boolean validateCard(String cardNumber, String cvv, String expiryDate) {
+        // Implementation for validating card details
+        return true;
+    }
+
+    public boolean cardExists(String cardNumber) {
+        // Implementation for checking if a card exists in the database
+        return true;
+    }
+
 }

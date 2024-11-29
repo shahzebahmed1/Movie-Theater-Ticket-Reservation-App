@@ -5,8 +5,8 @@ public class FinancialInstitution {
         this.database = database;
     }
 
-    public void addCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
-        database.insertCard(cardNumber, cvv, expiryDate, cardHolderName);
+    public void addCard(PaymentInfo paymentInfo) {
+        database.insertCard(paymentInfo.getCardNumber(), paymentInfo.getCvv(), paymentInfo.getExpiryDate(), paymentInfo.getCardHolderName());
         System.out.println("Card added to the database.");
     }
 

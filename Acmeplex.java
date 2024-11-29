@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 
-
 public class Acmeplex {
     private ArrayList<Theatre> theatres;
 
@@ -8,17 +7,15 @@ public class Acmeplex {
         this.theatres = new ArrayList<>();
     }
 
-    public ArrayList<Threatre> getTheatres(){
+    public ArrayList<Theatre> getTheatres(){
         return theatres;
     }
 
-    public void addTheatre(Threatre theatre){
+    public void addTheatre(Theatre theatre){
         this.theatres.add(theatre);
     }
 
     public void removeTheatre(Theatre theatre){
         this.theatres.remove(theatre);
     }
-
-
 }
