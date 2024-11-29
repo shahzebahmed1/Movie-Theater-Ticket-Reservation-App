@@ -3,6 +3,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class Database {
 
@@ -52,7 +53,7 @@ public class Database {
     	
     }
 
-    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
+    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException{
         try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
             String query = "INSERT INTO paymentInfo (cardNumber, cvv, expireDate, cardHolder) VALUES (?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -72,7 +73,7 @@ public class Database {
         }
     }
 
-    public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
+    public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException {
         try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
             String query = "SELECT COUNT(*) FROM paymentInfo WHERE cardNumber = ? AND cvv = ? AND expireDate = ? AND cardHolder = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -94,7 +95,9 @@ public class Database {
     }
 
 
-    public void getAllMovies() throws SQLException {
+    public ArrayList<Movie> getAllMovies() throws SQLException {
+        ArrayList<Movie> movies = new ArrayList<>();
+
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
             String query = "SELECT * FROM movies";
             try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
@@ -104,6 +107,8 @@ public class Database {
                     int duration = rs.getInt("duration");
                     String genre = rs.getString("genre");
                     System.out.println("Movie ID: " + movieID + ", Title: " + title + ", Duration: " + duration + " mins, Genre: " + genre);
+                    Movie movie = new Movie(movieID, title, genre, duration);
+                    movies.add(movie);
                 }
             } catch (Exception e) {
                 System.out.println("something went wrong: " + e);
@@ -111,6 +116,8 @@ public class Database {
         } catch (Exception e) {
             System.out.println("something went wrong: " + e);
         }
+        return movies;
+
     }
 
     public void getAllUsers() throws SQLException {
