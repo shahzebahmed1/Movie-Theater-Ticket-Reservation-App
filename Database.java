@@ -18,12 +18,15 @@ public class Database {
     public static void main(String[] args) throws SQLException {
         Database db = new Database("root", "password"); // remember to change credentials
         //uncomment the following method u wanna test
-        //db.getMovies();
-        //db.getAllMovies();
-        //db.getAllUsers();
-        //db.getAllSeats();
-        //db.getAllShowtimes();
-        //db.getAllTickets();
+        // db.getMovies();
+        // db.getAllMovies();
+        // db.getAllUsers();
+        // db.getAllSeats();
+        // db.getAllShowtimes();
+        // db.getAllTickets();
+        // db.insertCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
+        // db.validateCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
+
     }
     
     public void getMovies() throws SQLException {
@@ -71,7 +74,7 @@ public class Database {
 
     public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
         try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
-            String query = "SELECT COUNT(*) FROM paymentInfo WHERE cardNumber = ? && cvv = ? && expiryDate = ? && cardHolder = ?";
+            String query = "SELECT COUNT(*) FROM paymentInfo WHERE cardNumber = ? AND cvv = ? AND expireDate = ? AND cardHolder = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, cardNumber);
             preparedStatement.setString(2, cvv);
@@ -81,6 +84,7 @@ public class Database {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next() && resultSet.getInt(1) > 0) {
+                System.out.println("valid card information");
                 return true;
             }
         }catch(Exception e){
