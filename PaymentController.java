@@ -14,10 +14,8 @@ public class PaymentController {
 
         boolean paymentSuccess = financialInstitution.processPayment(cardNumber, amount);
         if (paymentSuccess) {
-            System.out.println("Payment completed successfully!");
             return true;
         } else {
-            System.out.println("Payment failed. Please try again.");
             return false;
         }
     }
