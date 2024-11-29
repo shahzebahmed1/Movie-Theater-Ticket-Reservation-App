@@ -1,26 +1,31 @@
+import java.sql.SQLException;
+
 public class FinancialInstitution {
-    private Database database; 
+    private Database database;
 
     public FinancialInstitution(Database database) {
         this.database = database;
     }
 
     public void addCard(PaymentInfo paymentInfo) {
-        database.insertCard(paymentInfo.getCardNumber(), paymentInfo.getCvv(), paymentInfo.getExpiryDate(), paymentInfo.getCardHolderName());
+        try{
+            database.insertCard(paymentInfo.getCardNumber(), paymentInfo.getCvv(), paymentInfo.getExpiryDate(), paymentInfo.getCardHolderName());
+
+        }catch(SQLException e){
+            System.out.println("Error occured while adding new card "+ e);
+        }
         System.out.println("Card added to the database.");
     }
 
-    public boolean validateCard(String cardNumber, String cvv, String expiryDate) {
-        return database.validateCard(cardNumber, cvv, expiryDate);
+    public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
+        boolean result = false;
+        try{
+            result = database.validateCard(cardNumber, cvv, expiryDate, cardHolderName);
+        }catch(SQLException e){
+            System.out.println("Could not validate payment information " + e);
+        }
+        return result;
     }
 
-    public boolean processPayment(String cardNumber, double amount) {
-        if (database.cardExists(cardNumber)) {
-            System.out.println("Processing payment of $" + amount + " for card: " + cardNumber);
-            return true;
-        } else {
-            System.out.println("Card not found. Payment failed.");
-            return false;
-        }
-    }
+
 }

@@ -3,6 +3,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class Database {
 
@@ -18,12 +19,15 @@ public class Database {
     public static void main(String[] args) throws SQLException {
         Database db = new Database("root", "password"); // remember to change credentials
         //uncomment the following method u wanna test
-        //db.getMovies();
-        //db.getAllMovies();
-        //db.getAllUsers();
-        //db.getAllSeats();
-        //db.getAllShowtimes();
-        //db.getAllTickets();
+        // db.getMovies();
+        // db.getAllMovies();
+        // db.getAllUsers();
+        // db.getAllSeats();
+        // db.getAllShowtimes();
+        // db.getAllTickets();
+        // db.insertCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
+        // db.validateCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
+
     }
     
     public void getMovies() throws SQLException {
@@ -49,21 +53,51 @@ public class Database {
     	
     }
 
-    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
-        // Implementation for inserting card details into the database
+    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException{
+        try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
+            String query = "INSERT INTO paymentInfo (cardNumber, cvv, expireDate, cardHolder) VALUES (?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, cardNumber);
+            preparedStatement.setString(2, cvv);
+            preparedStatement.setDate(3, java.sql.Date.valueOf(expiryDate));
+            preparedStatement.setString(4, cardHolderName);
+            int rowsChanged = preparedStatement.executeUpdate();
+            if(rowsChanged>0){
+                System.out.println("Payment information added successfully.");
+            } else {
+                System.out.println("Failed to add payment information.");
+            }
+        }catch(Exception e){
+            System.out.print("something went wrong " + e);
+
+        }
     }
 
-    public boolean validateCard(String cardNumber, String cvv, String expiryDate) {
-        // Implementation for validating card details
-        return true;
+    public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException {
+        try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
+            String query = "SELECT COUNT(*) FROM paymentInfo WHERE cardNumber = ? AND cvv = ? AND expireDate = ? AND cardHolder = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, cardNumber);
+            preparedStatement.setString(2, cvv);
+            preparedStatement.setDate(3, java.sql.Date.valueOf(expiryDate));
+            preparedStatement.setString(4, cardHolderName);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                System.out.println("valid card information");
+                return true;
+            }
+        }catch(Exception e){
+            System.out.println("something went wrong " + e );
+        }
+        return false;
     }
 
-    public boolean cardExists(String cardNumber) {
-        // Implementation for checking if a card exists in the database
-        return true;
-    }
 
-    public void getAllMovies() throws SQLException {
+    public ArrayList<Movie> getAllMovies() throws SQLException {
+        ArrayList<Movie> movies = new ArrayList<>();
+
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
             String query = "SELECT * FROM movies";
             try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
@@ -73,6 +107,8 @@ public class Database {
                     int duration = rs.getInt("duration");
                     String genre = rs.getString("genre");
                     System.out.println("Movie ID: " + movieID + ", Title: " + title + ", Duration: " + duration + " mins, Genre: " + genre);
+                    Movie movie = new Movie(movieID, title, genre, duration);
+                    movies.add(movie);
                 }
             } catch (Exception e) {
                 System.out.println("something went wrong: " + e);
@@ -80,6 +116,8 @@ public class Database {
         } catch (Exception e) {
             System.out.println("something went wrong: " + e);
         }
+        return movies;
+
     }
 
     public void getAllUsers() throws SQLException {
