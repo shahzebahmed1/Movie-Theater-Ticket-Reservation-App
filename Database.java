@@ -17,7 +17,13 @@ public class Database {
     
     public static void main(String[] args) throws SQLException {
         Database db = new Database("root", "password"); // remember to change credentials
-        db.getMovies();
+        //uncomment the following method u wanna test
+        //db.getMovies();
+        //db.getAllMovies();
+        //db.getAllUsers();
+        //db.getAllSeats();
+        //db.getAllShowtimes();
+        //db.getAllTickets();
     }
     
     public void getMovies() throws SQLException {
@@ -43,4 +49,113 @@ public class Database {
     	
     }
 
+    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
+        // Implementation for inserting card details into the database
+    }
+
+    public boolean validateCard(String cardNumber, String cvv, String expiryDate) {
+        // Implementation for validating card details
+        return true;
+    }
+
+    public boolean cardExists(String cardNumber) {
+        // Implementation for checking if a card exists in the database
+        return true;
+    }
+
+    public void getAllMovies() throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT * FROM movies";
+            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int movieID = rs.getInt("movieID");
+                    String title = rs.getString("title");
+                    int duration = rs.getInt("duration");
+                    String genre = rs.getString("genre");
+                    System.out.println("Movie ID: " + movieID + ", Title: " + title + ", Duration: " + duration + " mins, Genre: " + genre);
+                }
+            } catch (Exception e) {
+                System.out.println("something went wrong: " + e);
+            }
+        } catch (Exception e) {
+            System.out.println("something went wrong: " + e);
+        }
+    }
+
+    public void getAllUsers() throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT * FROM users";
+            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int userID = rs.getInt("userID");
+                    String name = rs.getString("name");
+                    String address = rs.getString("address");
+                    String username = rs.getString("username");
+                    String password = rs.getString("password");
+                    System.out.println("User ID: " + userID + ", Name: " + name + ", Address: " + address + ", Username: " + username + ", Password: " + password);
+                }
+            } catch (Exception e) {
+                System.out.println("something went wrong: " + e);
+            }
+        } catch (Exception e) {
+            System.out.println("something went wrong: " + e);
+        }
+    }
+
+    public void getAllSeats() throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT * FROM seats";
+            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int seatID = rs.getInt("seatID");
+                    boolean availability = rs.getBoolean("availability");
+                    int row = rs.getInt("seat_row");
+                    String column = rs.getString("seat_column");
+                    int movieID = rs.getInt("movieID");
+                    System.out.println("Seat ID: " + seatID + ", Availability: " + availability + ", Row: " + row + ", Column: " + column + ", Movie ID: " + movieID);
+                }
+            } catch (Exception e) {
+                System.out.println("something went wrong: " + e);
+            }
+        } catch (Exception e) {
+            System.out.println("something went wrong: " + e);
+        }
+    }
+
+    public void getAllShowtimes() throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT * FROM showtimes";
+            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int showtimeID = rs.getInt("showtimeID");
+                    int movieID = rs.getInt("movieID");
+                    String time = rs.getString("time");
+                    System.out.println("Showtime ID: " + showtimeID + ", Movie ID: " + movieID + ", Time: " + time);
+                }
+            } catch (Exception e) {
+                System.out.println("something went wrong: " + e);
+            }
+        } catch (Exception e) {
+            System.out.println("something went wrong: " + e);
+        }
+    }
+
+    public void getAllTickets() throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT * FROM tickets";
+            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int seatID = rs.getInt("seatID");
+                    int showtimeID = rs.getInt("showtimeID");
+                    int movieID = rs.getInt("movieID");
+                    int userID = rs.getInt("userID");
+                    System.out.println("Seat ID: " + seatID + ", Showtime ID: " + showtimeID + ", Movie ID: " + movieID + ", User ID: " + userID);
+                }
+            } catch (Exception e) {
+                System.out.println("something went wrong: " + e);
+            }
+        } catch (Exception e) {
+            System.out.println("something went wrong: " + e);
+        }
+    }
 }

@@ -4,6 +4,10 @@ import java.util.List;
 public class User {
 	
 	private ArrayList<Ticket> tickets;
+
+    public User() {
+        this.tickets = new ArrayList<>();
+    }
 	
 	public void cancelTicket() {
 		
@@ -19,5 +23,13 @@ public class User {
 		
 		// TODO
 	};
+
+    public void addTicket(Ticket ticket) {
+        tickets.add(ticket);
+    }
+
+    public void removeTicket(Ticket ticket) {
+        tickets.remove(ticket);
+    }
 	
 }
