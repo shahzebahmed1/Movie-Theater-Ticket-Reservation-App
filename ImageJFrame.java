@@ -12,6 +12,8 @@ public class ImageJFrame {
     private JFrame mainFrame;
     private JTextField searchField;
     private JButton searchButton;
+    private JButton loginButton;
+    private JButton createAccountButton;
 
     private ArrayList<String> movies = new ArrayList<>(); // Placeholder for movies
     private ArrayList<String> users = new ArrayList<>(); // Placeholder for users
@@ -62,8 +64,8 @@ public class ImageJFrame {
         orderHistoryButton = new JButton("Order History");
         orderHistoryButton.setVisible(false); // Hidden by default
         invoiceLookupButton = new JButton("Invoice Lookup");
-        JButton createAccountButton = new JButton("Register");
-        JButton loginButton = new JButton("Login");
+        createAccountButton = new JButton("Register");
+        loginButton = new JButton("Login");
         logoutButton = new JButton("Logout");
         logoutButton.setVisible(false); // Hidden by default
         adminControlsButton = new JButton("Admin Controls");
@@ -177,8 +179,12 @@ public class ImageJFrame {
         logoutButton.setVisible(false);
         orderHistoryButton.setVisible(false);
         adminControlsButton.setVisible(false);
+        loginButton.setVisible(true);
+        createAccountButton.setVisible(true);
+    
         mainFrame.repaint();
     }
+
 
     // Show Invoice Lookup Frame
     private void showInvoiceLookupFrame() {
