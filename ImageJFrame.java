@@ -20,6 +20,7 @@ public class ImageJFrame {
 
     private Database database;
     private MovieController movieController;
+    private PaymentController paymentController;
 
     ImageJFrame() {
         // Add some default movies for testing
@@ -374,51 +375,96 @@ public class ImageJFrame {
     // Payment Page
     private void showPaymentPage(String selectedMovie, String selectedSeat) {
         JFrame paymentFrame = new JFrame("Payment");
-
-        JPanel paymentPanel = new JPanel(new GridLayout(5, 2, 10, 10));
-
+    
+        JPanel paymentPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+    
         JLabel movieLabel = new JLabel("Movie: " + selectedMovie);
         JLabel seatLabel = new JLabel("Seat: " + selectedSeat);
+        JLabel cardholderLabel = new JLabel("Cardholder Name:");
+        JTextField cardholderField = new JTextField(20);
         JLabel cardNumberLabel = new JLabel("Card Number:");
-        JTextField cardNumberField = new JTextField();
-        JLabel expiryDateLabel = new JLabel("Expiry Date (MM/YY):");
-        JTextField expiryDateField = new JTextField();
+        JTextField cardNumberField = new JTextField(20);
+        JLabel expiryDateLabel = new JLabel("Expiry Date (YYYY-MM-DD):");
+        JTextField expiryDateField = new JTextField(10);
         JLabel cvvLabel = new JLabel("CVV:");
-        JTextField cvvField = new JTextField();
+        JTextField cvvField = new JTextField(4);
         JButton confirmButton = new JButton("Confirm Payment");
-
+    
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        paymentPanel.add(movieLabel, gbc);
+    
+        gbc.gridy = 1;
+        paymentPanel.add(seatLabel, gbc);
+    
+        gbc.gridy = 2;
+        paymentPanel.add(cardholderLabel, gbc);
+        gbc.gridx = 1;
+        cardholderField.setPreferredSize(new Dimension(300, 30)); 
+        paymentPanel.add(cardholderField, gbc);
+        gbc.gridx = 0;
+    
+        gbc.gridy = 3;
+        paymentPanel.add(cardNumberLabel, gbc);
+        gbc.gridx = 1;
+        cardNumberField.setPreferredSize(new Dimension(300, 30)); 
+        paymentPanel.add(cardNumberField, gbc);
+        gbc.gridx = 0;
+    
+        gbc.gridy = 4;
+        paymentPanel.add(expiryDateLabel, gbc);
+        gbc.gridx = 1;
+        expiryDateField.setPreferredSize(new Dimension(300, 30));
+        paymentPanel.add(expiryDateField, gbc);
+        gbc.gridx = 0;
+    
+        gbc.gridy = 5;
+        paymentPanel.add(cvvLabel, gbc);
+        gbc.gridx = 1;
+        cvvField.setPreferredSize(new Dimension(300, 30)); 
+        paymentPanel.add(cvvField, gbc);
+        gbc.gridx = 0;
+    
+        gbc.gridy = 6;
+        gbc.gridwidth = 2;
+        paymentPanel.add(confirmButton, gbc);
+    
         confirmButton.addActionListener(e -> {
+            String cardholderName = cardholderField.getText();
             String cardNumber = cardNumberField.getText();
             String expiryDate = expiryDateField.getText();
             String cvv = cvvField.getText();
-
-            if (cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
-                JOptionPane.showMessageDialog(paymentFrame, "Please fill in all payment details.", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (cardNumber.length() != 16 || cvv.length() != 3) {
-                JOptionPane.showMessageDialog(paymentFrame, "Invalid card details.", "Error", JOptionPane.ERROR_MESSAGE);
+    
+            if (cardholderName.isEmpty() || cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
+                JOptionPane.showMessageDialog(paymentFrame, "Please fill in payment details.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else if (cardNumber.length() != 16 || cvv.length() != 3 || !expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                JOptionPane.showMessageDialog(paymentFrame, "Invalid card details or invalid date format", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Enjoy your movie.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                paymentFrame.dispose();
+                FinancialInstitution financialInstitution = new FinancialInstitution(database); 
+                PaymentController paymentController = new PaymentController(financialInstitution);
+    
+                double amount = 15.00; 
+                boolean paymentSuccess = paymentController.processPayment(cardNumber, cvv, expiryDate, cardholderName, amount);
+    
+                if (paymentSuccess) {
+                    JOptionPane.showMessageDialog(paymentFrame, "Payment successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    paymentFrame.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(paymentFrame, "Payment failed.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
-
-        paymentPanel.add(movieLabel);
-        paymentPanel.add(new JLabel());
-        paymentPanel.add(seatLabel);
-        paymentPanel.add(new JLabel());
-        paymentPanel.add(cardNumberLabel);
-        paymentPanel.add(cardNumberField);
-        paymentPanel.add(expiryDateLabel);
-        paymentPanel.add(expiryDateField);
-        paymentPanel.add(cvvLabel);
-        paymentPanel.add(cvvField);
-        paymentPanel.add(new JLabel());
-        paymentPanel.add(confirmButton);
-
+    
         paymentFrame.add(paymentPanel);
-        paymentFrame.setSize(400, 400);
+        paymentFrame.setSize(500, 400); // Adjusted frame size
+        paymentFrame.setLocationRelativeTo(null);
         paymentFrame.setVisible(true);
     }
+    
+    
 
     public static void main(String[] args) {
         new ImageJFrame();
