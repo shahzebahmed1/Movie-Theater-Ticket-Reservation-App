@@ -6,5 +6,5 @@
 Welcome to the Movie Ticket Web Application project developed by Group 30 for the ENSF 480 course.
 
 # commands
-Compile db class: `javac Database.java`
-To run the db test class: `java -cp .:mysql-connector-j-8.0.31.jar Database`
+Compile all java classes with the mysql jdbc driver: `javac -cp .:mysql-connector-j-8.0.31.jar *.java`
+To run ImageJFrame with the db: `java -cp .:mysql-connector-j-8.0.31.jar ImageJFrame`

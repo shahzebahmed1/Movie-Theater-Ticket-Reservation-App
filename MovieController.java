@@ -19,4 +19,15 @@ public class MovieController {
         return movies;
     }
 
+    // Search for movies by name
+    public ArrayList<String> searchMovie(String query, ArrayList<String> movies) {
+        ArrayList<String> results = new ArrayList<>();
+        for (String movie : movies) {
+            if (movie.toLowerCase().contains(query.toLowerCase())) {
+                results.add(movie);
+            }
+        }
+        return results;
+    }
+
 }
