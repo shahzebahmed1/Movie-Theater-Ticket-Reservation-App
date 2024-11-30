@@ -90,17 +90,6 @@ public class ImageJFrame {
         gbc.gridy++;
         buttonPanel.add(adminControlsButton, gbc);
 
-        // Create search bar and button
-        searchField = new JTextField(20);
-        searchButton = new JButton("Search");
-
-        // Add search bar and button to the button panel
-        gbc.gridy++;
-        buttonPanel.add(searchField, gbc);
-
-        gbc.gridy++;
-        buttonPanel.add(searchButton, gbc);
-
         // Add the button panel to the layered pane
         layeredPane.add(buttonPanel, Integer.valueOf(1)); // Add buttons at the foreground layer
 
@@ -115,7 +104,6 @@ public class ImageJFrame {
         logoutButton.addActionListener(e -> logout());
         invoiceLookupButton.addActionListener(e -> showInvoiceLookupFrame());
         adminControlsButton.addActionListener(e -> showAdminControls());
-        searchButton.addActionListener(e -> searchMovies());
 
         // Add the layered pane to the frame
         mainFrame.add(layeredPane, BorderLayout.CENTER);
@@ -292,7 +280,22 @@ public class ImageJFrame {
     private void showMovieSelectionPage() {
         JFrame movieFrame = new JFrame("Select Movie");
 
-        JList<String> movieList = new JList<>(movies.toArray(new String[0]));
+        JPanel moviePanel = new JPanel(new BorderLayout());
+        JPanel searchPanel = new JPanel(new FlowLayout());
+
+        searchField = new JTextField(20);
+        searchButton = new JButton("Search");
+
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+
+        ArrayList<Movie> allMovies = movieController.browseMovies();
+        ArrayList<String> movieTitles = new ArrayList<>();
+        for (Movie movie : allMovies) {
+            movieTitles.add(movie.getTitle());
+        }
+
+        JList<String> movieList = new JList<>(movieTitles.toArray(new String[0]));
         movieList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JButton nextButton = new JButton("Next");
@@ -306,8 +309,28 @@ public class ImageJFrame {
             }
         });
 
-        JPanel moviePanel = new JPanel(new BorderLayout());
+        searchButton.addActionListener(e -> {
+            String query = searchField.getText();
+            if (!query.isEmpty()) {
+                ArrayList<String> searchResults = new ArrayList<>();
+                for (Movie movie : allMovies) {
+                    if (movie.getTitle().toLowerCase().contains(query.toLowerCase())) {
+                        searchResults.add(movie.getTitle());
+                    }
+                }
+
+                if (searchResults.isEmpty()) {
+                    JOptionPane.showMessageDialog(movieFrame, "No movies found matching the query.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    movieList.setListData(searchResults.toArray(new String[0]));
+                }
+            } else {
+                movieList.setListData(movieTitles.toArray(new String[0]));
+            }
+        });
+
         moviePanel.add(new JLabel("Select a Movie and Showtime:"), BorderLayout.NORTH);
+        moviePanel.add(searchPanel, BorderLayout.NORTH);
         moviePanel.add(new JScrollPane(movieList), BorderLayout.CENTER);
         moviePanel.add(nextButton, BorderLayout.SOUTH);
 
@@ -389,30 +412,6 @@ public class ImageJFrame {
         paymentFrame.add(paymentPanel);
         paymentFrame.setSize(400, 400);
         paymentFrame.setVisible(true);
-    }
-
-    // Search movies
-    private void searchMovies() {
-        String query = searchField.getText();
-        if (query.isEmpty()) {
-            JOptionPane.showMessageDialog(mainFrame, "Please enter a movie name to search.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        ArrayList<Movie> allMovies = movieController.browseMovies();
-        ArrayList<String> searchResults = new ArrayList<>();
-
-        for (Movie movie : allMovies) {
-            if (movie.getTitle().toLowerCase().contains(query.toLowerCase())) {
-                searchResults.add(movie.getTitle());
-            }
-        }
-
-        if (searchResults.isEmpty()) {
-            JOptionPane.showMessageDialog(mainFrame, "No movies found matching the query.", "Info", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(mainFrame, "Movies found: " + String.join(", ", searchResults), "Info", JOptionPane.INFORMATION_MESSAGE);
-        }
     }
 
     public static void main(String[] args) {
