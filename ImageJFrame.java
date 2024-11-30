@@ -10,9 +10,14 @@ public class ImageJFrame {
     private JButton logoutButton; // Logout button (only shown when logged in)
     private JButton orderHistoryButton, invoiceLookupButton, adminControlsButton;
     private JFrame mainFrame;
+    private JTextField searchField;
+    private JButton searchButton;
 
     private ArrayList<String> movies = new ArrayList<>(); // Placeholder for movies
     private ArrayList<String> users = new ArrayList<>(); // Placeholder for users
+
+    private Database database;
+    private MovieController movieController;
 
     ImageJFrame() {
         // Add some default movies for testing
@@ -85,8 +90,23 @@ public class ImageJFrame {
         gbc.gridy++;
         buttonPanel.add(adminControlsButton, gbc);
 
+        // Create search bar and button
+        searchField = new JTextField(20);
+        searchButton = new JButton("Search");
+
+        // Add search bar and button to the button panel
+        gbc.gridy++;
+        buttonPanel.add(searchField, gbc);
+
+        gbc.gridy++;
+        buttonPanel.add(searchButton, gbc);
+
         // Add the button panel to the layered pane
         layeredPane.add(buttonPanel, Integer.valueOf(1)); // Add buttons at the foreground layer
+
+        // Initialize database and movie controller
+        database = new Database("root", "password");
+        movieController = new MovieController(database);
 
         // ActionListener for buttons
         bookTicketButton.addActionListener(e -> showMovieSelectionPage());
@@ -95,6 +115,7 @@ public class ImageJFrame {
         logoutButton.addActionListener(e -> logout());
         invoiceLookupButton.addActionListener(e -> showInvoiceLookupFrame());
         adminControlsButton.addActionListener(e -> showAdminControls());
+        searchButton.addActionListener(e -> searchMovies());
 
         // Add the layered pane to the frame
         mainFrame.add(layeredPane, BorderLayout.CENTER);
@@ -368,6 +389,30 @@ public class ImageJFrame {
         paymentFrame.add(paymentPanel);
         paymentFrame.setSize(400, 400);
         paymentFrame.setVisible(true);
+    }
+
+    // Search movies
+    private void searchMovies() {
+        String query = searchField.getText();
+        if (query.isEmpty()) {
+            JOptionPane.showMessageDialog(mainFrame, "Please enter a movie name to search.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        ArrayList<Movie> allMovies = movieController.browseMovies();
+        ArrayList<String> searchResults = new ArrayList<>();
+
+        for (Movie movie : allMovies) {
+            if (movie.getTitle().toLowerCase().contains(query.toLowerCase())) {
+                searchResults.add(movie.getTitle());
+            }
+        }
+
+        if (searchResults.isEmpty()) {
+            JOptionPane.showMessageDialog(mainFrame, "No movies found matching the query.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(mainFrame, "Movies found: " + String.join(", ", searchResults), "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public static void main(String[] args) {
