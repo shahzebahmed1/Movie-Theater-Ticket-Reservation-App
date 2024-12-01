@@ -446,18 +446,15 @@ public class ImageJFrame {
         JPanel adminPanel = new JPanel(new GridLayout(4, 1, 10, 10));
 
         JButton addMovieButton = new JButton("Add Movie");
-        JButton deleteMovieButton = new JButton("Delete Movie");
-        JButton manageShowtimesButton = new JButton("Manage Showtimes");
+        JButton deleteMovieButton = new JButton("Delete Movie");        
         JButton deleteUserButton = new JButton("Delete User");
 
         adminPanel.add(addMovieButton);
         adminPanel.add(deleteMovieButton);
-        adminPanel.add(manageShowtimesButton);
         adminPanel.add(deleteUserButton);
 
         addMovieButton.addActionListener(e -> addMovie());
         deleteMovieButton.addActionListener(e -> deleteMovie());
-        manageShowtimesButton.addActionListener(e -> manageShowtimes());
         deleteUserButton.addActionListener(e -> deleteUser());
 
         adminFrame.add(adminPanel);
@@ -473,7 +470,7 @@ public class ImageJFrame {
         JTextField titleField = new JTextField();
         JLabel showtimeLabel = new JLabel("Showtime (YYYY-MM-DD HH:MM:SS):");
         JTextField showtimeField = new JTextField(); 
-        JLabel availableToPublicLabel = new JLabel("Public Availability (Yes/No):");
+        JLabel availableToPublicLabel = new JLabel("Public Availability (yes/no):");
         JTextField availableToPublicField = new JTextField();
         JLabel durationLabel = new JLabel("Duration:");
         JTextField durationField = new JTextField(); 
@@ -509,25 +506,13 @@ public class ImageJFrame {
                         database.addMovie(title, genre, duration, availableToPublic, showtime);
                         JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     } else {
-                        JOptionPane.showMessageDialog(mainFrame,
-                                "Duration must be greater than 0.",
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
+                        JOptionPane.showMessageDialog(mainFrame,"Duration cannot be negative", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(mainFrame,
-                            "Invalid duration. Please enter a valid number.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
+                    JOptionPane.showMessageDialog(mainFrame,"Invalid duration", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(mainFrame,
-                        "Invalid input. Ensure title is filled, showtime is in valid format (YYYY-MM-DD HH:MM:SS), Available to Public is 'Yes' or 'No', and genre is not empty.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
+                JOptionPane.showMessageDialog(mainFrame,"Invalid input","Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -552,27 +537,31 @@ public class ImageJFrame {
             JOptionPane.showMessageDialog(mainFrame, "No movies to delete", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        String[] movieTitles = new String[movies.size()];
+        String[] movieTitlesWithShowtimes = new String[movies.size()];
         for (int i = 0; i < movies.size(); i++) {
-            movieTitles[i] = movies.get(i).getTitle();
+            Movie movie = movies.get(i);
+            Showtime showtime = database.getShowtimeByMovie(movie.getMovieId());
+            movieTitlesWithShowtimes[i] = movie.getTitle() + " - Showtime: " + showtime.getTime();
         }
-        String selectedMovieTitle = (String) JOptionPane.showInputDialog(mainFrame, "Select a movie to delete:", "Delete", JOptionPane.QUESTION_MESSAGE, null, movieTitles, movieTitles[0]);
+        String selectedMovieTitle = (String) JOptionPane.showInputDialog(mainFrame, "Select movie to delete", "Delete", JOptionPane.QUESTION_MESSAGE, null,movieTitlesWithShowtimes, movieTitlesWithShowtimes[0]);
         if (selectedMovieTitle != null) {
             Movie movieToRemove = null;
+            
             for (Movie movie : movies) {
-                if (movie.getTitle().equals(selectedMovieTitle)) {
+                String movieTitleWithShowtime = movie.getTitle() + " - Showtime: " + database.getShowtimeByMovie(movie.getMovieId()).getTime();
+                if (movieTitleWithShowtime.equals(selectedMovieTitle)) {
                     movieToRemove = movie;
                     break;
                 }
             }
-        
+            
             if (movieToRemove != null) {
-                try{
+                try {
                     database.removeMovie(movieToRemove.getMovieId());
-                }catch(SQLException e){
-                    System.err.println("error"+ e);
+                    JOptionPane.showMessageDialog(mainFrame, "Movie deleted", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } catch (SQLException e) {
+                    System.err.println("Error: " + e);
                 }
-                JOptionPane.showMessageDialog(mainFrame, "Movie deleted", "Success", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(mainFrame, "Movie not found", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -580,10 +569,6 @@ public class ImageJFrame {
         
     }
 
-    // Manage Showtimes
-    private void manageShowtimes() {
-        JOptionPane.showMessageDialog(mainFrame, "Showtime management not implemented yet.", "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
 
     // Delete User
     private void deleteUser() {
