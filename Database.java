@@ -176,6 +176,55 @@ public class Database {
             System.out.println("Error: " + e);
         }
     }
+
+    public void addMovie(String title, String genre, int duration, boolean availability, String showTime) {
+        String movieQuery = "INSERT INTO movies (title, duration, genre, availableToPublic, preReleasedTicketsLeft) VALUES (?, ?, ?, ?, ?)";
+        String showtimeQuery = "INSERT INTO showtimes (movieID, time) VALUES (?, ?)";
+        String seatQuery = "INSERT INTO seats (availability, seat_row, seat_column, movieID) VALUES (?, ?, ?, ?)";
+        
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement movieStatement = connection.prepareStatement(movieQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+             PreparedStatement showtimeStatement = connection.prepareStatement(showtimeQuery);
+             PreparedStatement seatStatement = connection.prepareStatement(seatQuery)) {
+    
+            movieStatement.setString(1, title);
+            movieStatement.setInt(2, duration);
+            movieStatement.setString(3, genre);
+            movieStatement.setBoolean(4, availability);
+            movieStatement.setInt(5, 2);
+    
+            int rowsAffected = movieStatement.executeUpdate();
+    
+            if (rowsAffected > 0) {
+                try (ResultSet generatedKeys = movieStatement.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int movieID = generatedKeys.getInt(1);
+    
+                        showtimeStatement.setInt(1, movieID);
+                        showtimeStatement.setString(2, showTime);
+                        showtimeStatement.executeUpdate();
+    
+                        for (int row = 1; row <= 5; row++) {
+                            for (char column = 'A'; column <= 'E'; column++) {
+                                seatStatement.setBoolean(1, true);
+                                seatStatement.setInt(2, row);
+                                seatStatement.setString(3, String.valueOf(column));
+                                seatStatement.setInt(4, movieID);
+                                seatStatement.addBatch();
+                            }
+                        }
+    
+                        seatStatement.executeBatch();
+                        System.out.println("Movie, showtime and seats added");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+    
+    
     
     
 

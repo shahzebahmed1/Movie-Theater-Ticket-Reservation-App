@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -460,61 +461,85 @@ public class ImageJFrame {
         adminFrame.setVisible(true);
     }
 
-    // Add Movie
-    private void addMovie() {
-        // Create a JPanel to hold the input fields
-        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+// Add Movie
+private void addMovie() {
+    JPanel panel = new JPanel(new GridLayout(5, 2, 5, 5));  
 
-        // Create labels and text fields
-        JLabel titleLabel = new JLabel("Movie Title:");
-        JTextField titleField = new JTextField();
+    JLabel titleLabel = new JLabel("Movie Title:");
+    JTextField titleField = new JTextField();
+    JLabel showtimeLabel = new JLabel("Showtime (YYYY-MM-DD HH:MM:SS):");
+    JTextField showtimeField = new JTextField(); 
+    JLabel availableToPublicLabel = new JLabel("Public Availability (Yes/No):");
+    JTextField availableToPublicField = new JTextField();
+    JLabel durationLabel = new JLabel("Duration:");
+    JTextField durationField = new JTextField(); 
+    JLabel genreLabel = new JLabel("Genre:");
+    JTextField genreField = new JTextField(); 
+    panel.add(titleLabel);
+    panel.add(titleField);
+    panel.add(showtimeLabel);
+    panel.add(showtimeField);
+    panel.add(availableToPublicLabel);
+    panel.add(availableToPublicField);
+    panel.add(durationLabel);
+    panel.add(durationField);
+    panel.add(genreLabel);
+    panel.add(genreField);
 
-        JLabel showtimeLabel = new JLabel("Showtime (HH:mm):");
-        JTextField showtimeField = new JTextField(); // Use JTextField for manual validation
+    int result = JOptionPane.showConfirmDialog(mainFrame, panel, "Enter Movie Details", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        // Add components to the panel
-        panel.add(titleLabel);
-        panel.add(titleField);
-        panel.add(showtimeLabel);
-        panel.add(showtimeField);
+    if (result == JOptionPane.OK_OPTION) {
+        String title = titleField.getText().trim();
+        String showtime = showtimeField.getText().trim();
+        String availableToPublicInput = availableToPublicField.getText().trim().toLowerCase();
+        String genre = genreField.getText().trim();
+        String durationInput = durationField.getText().trim();
 
-        // Show input dialog with the panel
-        int result = JOptionPane.showConfirmDialog(
-                mainFrame,
-                panel,
-                "Enter Movie Details",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
-
-        if (result == JOptionPane.OK_OPTION) {
-            String title = titleField.getText().trim();
-            String showtime = showtimeField.getText().trim();
-
-            if (!title.isEmpty() && isValidTime(showtime)) {
-                String newMovie = title + " - " + showtime;
-                movies.add(newMovie);
-                JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            } else {
+        if (!title.isEmpty() && isValidTime(showtime) && (availableToPublicInput.equals("yes") || availableToPublicInput.equals("no"))
+                && !genre.isEmpty()) {
+            
+            try {
+                int duration = Integer.parseInt(durationInput); 
+                if (duration > 0) {
+                    boolean availableToPublic = availableToPublicInput.equals("yes");  
+                    database.addMovie(title, genre, duration, availableToPublic, showtime);
+                    JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame,
+                            "Duration must be greater than 0.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(mainFrame,
-                        "Invalid input. Ensure title is filled and showtime is in HH:mm format.",
+                        "Invalid duration. Please enter a valid number.",
                         "Error",
                         JOptionPane.ERROR_MESSAGE
                 );
             }
+        } else {
+            JOptionPane.showMessageDialog(mainFrame,
+                    "Invalid input. Ensure title is filled, showtime is in valid format (YYYY-MM-DD HH:MM:SS), Available to Public is 'Yes' or 'No', and genre is not empty.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+}
+
+
+
+    private boolean isValidTime(String time) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        try {
+            LocalDateTime.parse(time, timeFormatter);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false; 
         }
     }
 
-    private boolean isValidTime(String time) {
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-        try {
-            // Attempt to parse the input as a LocalTime
-            LocalTime.parse(time, timeFormatter);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false; // Invalid time format
-        }
-    }
 
     // Delete Movie
     private void deleteMovie() {
