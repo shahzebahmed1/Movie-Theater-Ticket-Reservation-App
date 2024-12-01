@@ -11,12 +11,13 @@ import java.time.temporal.ChronoUnit;
 public class User {
 	
 	private ArrayList<Ticket> tickets;
+    private String username;
 	
     public static void main(String[] args) throws SQLException {
     	
-        Database db = new Database("root", "password"); // remember to change credentials
-        User u = new User();
-        u.register(db, "pogman", "poggers", "Poggeth", "Pog Dr.", 100, "123456789", "123", "2004-03-27");
+        // Database db = new Database("root", "password"); // remember to change credentials
+        // User u = new User();
+        // u.register(db, "pogman", "poggers", "Poggeth", "Pog Dr.", 100, "123456789", "123", "2004-03-27");
 
     }
 	
@@ -143,6 +144,14 @@ public class User {
 
     public void removeTicket(Ticket ticket) {
         tickets.remove(ticket);
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
     }
 	
 }

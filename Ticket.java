@@ -22,12 +22,12 @@ public class Ticket {
     }
 
     public void issue() {
-        seat.setAvailability("Booked");
-        System.out.println("Issued a ticket for the movie" + movie.getTitle() + " at " + showtime.getTime());
+        seat.setAvailability(false); // Set availability to false (Booked)
+        System.out.println("Issued a ticket for the movie " + movie.getTitle() + " at " + showtime.getTime());
     }
 
     public void cancel() {
-        seat.setAvailability("Available");
+        seat.setAvailability(true); // Set availability to true (Available)
         System.out.println("Ticket canceled for the movie " + movie.getTitle() + " at " + showtime.getTime());
     }
 
