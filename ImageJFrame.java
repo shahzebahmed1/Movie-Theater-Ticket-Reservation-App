@@ -332,15 +332,21 @@ public class ImageJFrame {
 
         lookupButton.addActionListener(e -> {
             String invoiceNumber = invoiceField.getText();
-            // Simulate invoice lookup
-            if (invoiceNumber.equals("12345")) { // Replace with database logic
-                int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice Lookup", JOptionPane.YES_NO_OPTION);
-                if (option == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    invoiceFrame.dispose();
+            try {
+                int ticketID = Integer.parseInt(invoiceNumber);
+                boolean ticketFound = database.checkTicketExists(ticketID);
+                if (ticketFound) {
+                    int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice Lookup", JOptionPane.YES_NO_OPTION);
+                    if (option == JOptionPane.YES_OPTION) {
+                        database.cancelTicket(ticketID);
+                        JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        invoiceFrame.dispose();
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(invoiceFrame, "Invalid Invoice Number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-            } else {
-                JOptionPane.showMessageDialog(invoiceFrame, "Invalid Invoice Number.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException | SQLException ex) {
+                JOptionPane.showMessageDialog(invoiceFrame, "Error processing invoice number.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 

@@ -221,4 +221,29 @@ public class Database {
             System.out.println("something went wrong: " + e);
         }
     }
+
+    public boolean checkTicketExists(int ticketID) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT COUNT(*) FROM tickets WHERE ticketID = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setInt(1, ticketID);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public void cancelTicket(int ticketID) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "DELETE FROM tickets WHERE ticketID = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setInt(1, ticketID);
+                ps.executeUpdate();
+            }
+        }
+    }
 }
