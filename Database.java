@@ -130,22 +130,53 @@ public class Database {
 
     public void removeMovie(int movieID) throws SQLException {
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
-            String query = "DELETE FROM movies WHERE movieID = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            String disableFKChecks = "SET FOREIGN_KEY_CHECKS = 0;";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(disableFKChecks)) {
+                preparedStatement.executeUpdate();
+            }
+    
+            String deleteTicketsQuery = "DELETE FROM tickets WHERE movieID = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(deleteTicketsQuery)) {
                 preparedStatement.setInt(1, movieID);
                 int rowsDeleted = preparedStatement.executeUpdate();
                 if (rowsDeleted > 0) {
-                    System.out.println("Movie removed");
+                    System.out.println("tickets removed.");
                 } else {
-                    System.out.println("No movie found" + movieID + ".");
+                    System.out.println("Tickets not found");
                 }
-            } catch (Exception e) {
-                System.out.println("Error deleting movie" + e);
             }
-        } catch (Exception e) {
-            System.out.println("error" + e);
+    
+            String deleteSeatsQuery = "DELETE FROM seats WHERE movieID = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSeatsQuery)) {
+                preparedStatement.setInt(1, movieID);
+                int rowsDeleted = preparedStatement.executeUpdate();
+                if (rowsDeleted > 0) {
+                    System.out.println("seats removed");
+                } else {
+                    System.out.println("Seats not found");
+                }
+            }
+    
+            String deleteMovieQuery = "DELETE FROM movies WHERE movieID = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(deleteMovieQuery)) {
+                preparedStatement.setInt(1, movieID);
+                int rowsDeleted = preparedStatement.executeUpdate();
+                if (rowsDeleted > 0) {
+                    System.out.println("Movie deleted");
+                } else {
+                    System.out.println("Movie not found");
+                }
+            }
+    
+            String enableFKChecks = "SET FOREIGN_KEY_CHECKS = 1;";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(enableFKChecks)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e);
         }
     }
+    
     
 
     public void updateMovieInDatabase(Movie movie) throws SQLException{
