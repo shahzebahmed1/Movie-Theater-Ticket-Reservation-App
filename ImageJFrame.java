@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import java.util.HashSet;
 import java.time.LocalTime;
 
 
@@ -461,72 +462,72 @@ public class ImageJFrame {
         adminFrame.setVisible(true);
     }
 
-// Add Movie
-private void addMovie() {
-    JPanel panel = new JPanel(new GridLayout(5, 2, 5, 5));  
+    // Add Movie
+    private void addMovie() {
+        JPanel panel = new JPanel(new GridLayout(5, 2, 5, 5));  
 
-    JLabel titleLabel = new JLabel("Movie Title:");
-    JTextField titleField = new JTextField();
-    JLabel showtimeLabel = new JLabel("Showtime (YYYY-MM-DD HH:MM:SS):");
-    JTextField showtimeField = new JTextField(); 
-    JLabel availableToPublicLabel = new JLabel("Public Availability (Yes/No):");
-    JTextField availableToPublicField = new JTextField();
-    JLabel durationLabel = new JLabel("Duration:");
-    JTextField durationField = new JTextField(); 
-    JLabel genreLabel = new JLabel("Genre:");
-    JTextField genreField = new JTextField(); 
-    panel.add(titleLabel);
-    panel.add(titleField);
-    panel.add(showtimeLabel);
-    panel.add(showtimeField);
-    panel.add(availableToPublicLabel);
-    panel.add(availableToPublicField);
-    panel.add(durationLabel);
-    panel.add(durationField);
-    panel.add(genreLabel);
-    panel.add(genreField);
+        JLabel titleLabel = new JLabel("Movie Title:");
+        JTextField titleField = new JTextField();
+        JLabel showtimeLabel = new JLabel("Showtime (YYYY-MM-DD HH:MM:SS):");
+        JTextField showtimeField = new JTextField(); 
+        JLabel availableToPublicLabel = new JLabel("Public Availability (Yes/No):");
+        JTextField availableToPublicField = new JTextField();
+        JLabel durationLabel = new JLabel("Duration:");
+        JTextField durationField = new JTextField(); 
+        JLabel genreLabel = new JLabel("Genre:");
+        JTextField genreField = new JTextField(); 
+        panel.add(titleLabel);
+        panel.add(titleField);
+        panel.add(showtimeLabel);
+        panel.add(showtimeField);
+        panel.add(availableToPublicLabel);
+        panel.add(availableToPublicField);
+        panel.add(durationLabel);
+        panel.add(durationField);
+        panel.add(genreLabel);
+        panel.add(genreField);
 
-    int result = JOptionPane.showConfirmDialog(mainFrame, panel, "Enter Movie Details", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(mainFrame, panel, "Enter Movie Details", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-    if (result == JOptionPane.OK_OPTION) {
-        String title = titleField.getText().trim();
-        String showtime = showtimeField.getText().trim();
-        String availableToPublicInput = availableToPublicField.getText().trim().toLowerCase();
-        String genre = genreField.getText().trim();
-        String durationInput = durationField.getText().trim();
+        if (result == JOptionPane.OK_OPTION) {
+            String title = titleField.getText().trim();
+            String showtime = showtimeField.getText().trim();
+            String availableToPublicInput = availableToPublicField.getText().trim().toLowerCase();
+            String genre = genreField.getText().trim();
+            String durationInput = durationField.getText().trim();
 
-        if (!title.isEmpty() && isValidTime(showtime) && (availableToPublicInput.equals("yes") || availableToPublicInput.equals("no"))
-                && !genre.isEmpty()) {
-            
-            try {
-                int duration = Integer.parseInt(durationInput); 
-                if (duration > 0) {
-                    boolean availableToPublic = availableToPublicInput.equals("yes");  
-                    database.addMovie(title, genre, duration, availableToPublic, showtime);
-                    JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                } else {
+            if (!title.isEmpty() && isValidTime(showtime) && (availableToPublicInput.equals("yes") || availableToPublicInput.equals("no"))
+                    && !genre.isEmpty()) {
+                
+                try {
+                    int duration = Integer.parseInt(durationInput); 
+                    if (duration > 0) {
+                        boolean availableToPublic = availableToPublicInput.equals("yes");  
+                        database.addMovie(title, genre, duration, availableToPublic, showtime);
+                        JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(mainFrame,
+                                "Duration must be greater than 0.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    }
+                } catch (NumberFormatException e) {
                     JOptionPane.showMessageDialog(mainFrame,
-                            "Duration must be greater than 0.",
+                            "Invalid duration. Please enter a valid number.",
                             "Error",
                             JOptionPane.ERROR_MESSAGE
                     );
                 }
-            } catch (NumberFormatException e) {
+            } else {
                 JOptionPane.showMessageDialog(mainFrame,
-                        "Invalid duration. Please enter a valid number.",
+                        "Invalid input. Ensure title is filled, showtime is in valid format (YYYY-MM-DD HH:MM:SS), Available to Public is 'Yes' or 'No', and genre is not empty.",
                         "Error",
                         JOptionPane.ERROR_MESSAGE
                 );
             }
-        } else {
-            JOptionPane.showMessageDialog(mainFrame,
-                    "Invalid input. Ensure title is filled, showtime is in valid format (YYYY-MM-DD HH:MM:SS), Available to Public is 'Yes' or 'No', and genre is not empty.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
         }
     }
-}
 
 
 
@@ -609,68 +610,65 @@ private void addMovie() {
     //Movie Selection
     private void showMovieSelectionPage() {
         JFrame movieFrame = new JFrame("Select Movie");
-    
+
         JPanel moviePanel = new JPanel(new BorderLayout());
         JPanel searchPanel = new JPanel(new FlowLayout());
-    
+
         searchField = new JTextField(20);
         searchButton = new JButton("Search");
-    
+
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
-    
-        ArrayList<Movie> allMovies;
-        if(userType.equals("guest")){
-            allMovies = movieController.browseMovies(true);
-        } else {
-            allMovies = movieController.browseMovies(false);
-        }
-    
-        // Instead of just storing movie titles, store Movie objects in the list
-        ArrayList<Movie> movieListData = new ArrayList<>(allMovies);
-        ArrayList<String> movieTitles = new ArrayList<>();
+
+        ArrayList<Movie> allMovies = userType.equals("guest") ? movieController.browseMovies(true) : movieController.browseMovies(false);
+
+        HashSet<String> uniqueTitles = new HashSet<>();
+        ArrayList<Movie> uniqueMovies = new ArrayList<>();
         for (Movie movie : allMovies) {
+            if (uniqueTitles.add(movie.getTitle())) {
+                uniqueMovies.add(movie);
+            }
+        }
+
+        ArrayList<String> movieTitles = new ArrayList<>();
+        for (Movie movie : uniqueMovies) {
             movieTitles.add(movie.getTitle());
         }
-    
+
         JList<String> movieList = new JList<>(movieTitles.toArray(new String[0]));
         movieList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    
+
         JButton nextButton = new JButton("Next");
         nextButton.addActionListener(e -> {
             String selectedTitle = movieList.getSelectedValue();
             if (selectedTitle != null) {
-                // Find the corresponding Movie object based on selected title
-                Movie selectedMovie = null;
-                for (Movie movie : movieListData) {
+                ArrayList<Movie> selectedMovies = new ArrayList<>();
+                for (Movie movie : allMovies) {
                     if (movie.getTitle().equals(selectedTitle)) {
-                        selectedMovie = movie;
-                        break;
+                        selectedMovies.add(movie);
                     }
                 }
-    
-                if (selectedMovie != null) {
-                    int movieId = selectedMovie.getMovieId();
-                    showSeatSelectionPage(selectedMovie, movieId);
+
+                if (!selectedMovies.isEmpty()) {
+                    showShowtimeSelectionPage(selectedTitle, selectedMovies);
                     movieFrame.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(movieFrame, "Error finding selected movie.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(movieFrame, "Error, could not find showtimes", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(movieFrame, "Please select a movie.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(movieFrame, "Select a movie", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-    
+
         searchButton.addActionListener(e -> {
             String query = searchField.getText();
             if (!query.isEmpty()) {
                 ArrayList<String> searchResults = new ArrayList<>();
-                for (Movie movie : allMovies) {
+                for (Movie movie : uniqueMovies) {
                     if (movie.getTitle().toLowerCase().contains(query.toLowerCase())) {
                         searchResults.add(movie.getTitle());
                     }
                 }
-    
                 if (searchResults.isEmpty()) {
                     JOptionPane.showMessageDialog(movieFrame, "No movies found matching the query.", "Info", JOptionPane.INFORMATION_MESSAGE);
                 } else {
@@ -680,15 +678,44 @@ private void addMovie() {
                 movieList.setListData(movieTitles.toArray(new String[0]));
             }
         });
-    
-        moviePanel.add(new JLabel("Select a Movie and Showtime:"), BorderLayout.NORTH);
+
+        moviePanel.add(new JLabel("Select a Movie:"), BorderLayout.NORTH);
         moviePanel.add(searchPanel, BorderLayout.NORTH);
         moviePanel.add(new JScrollPane(movieList), BorderLayout.CENTER);
         moviePanel.add(nextButton, BorderLayout.SOUTH);
-    
+
         movieFrame.add(moviePanel);
         movieFrame.setSize(400, 300);
         movieFrame.setVisible(true);
+    }
+        
+    private void showShowtimeSelectionPage(String title, ArrayList<Movie> movies) {
+        JFrame showtimeFrame = new JFrame("Select Showtime");
+    
+        JPanel showtimePanel = new JPanel(new BorderLayout());
+        JPanel buttonPanel = new JPanel(new GridLayout(movies.size(), 1, 5, 5));  // Create a panel for showtime buttons
+    
+        for (Movie movie : movies) {
+            Showtime showtime = database.getShowtimeByMovie(movie.getMovieId());
+    
+            if (showtime != null) {
+                JButton showtimeButton = new JButton(showtime.getTime());
+    
+                showtimeButton.addActionListener(e -> {
+                    showSeatSelectionPage(movie, movie.getMovieId());
+                    showtimeFrame.dispose();  
+                });
+                buttonPanel.add(showtimeButton);
+            }
+        }
+    
+        showtimePanel.add(new JLabel("Select a Showtime for \"" + title + "\":"), BorderLayout.NORTH);
+        showtimePanel.add(new JScrollPane(buttonPanel), BorderLayout.CENTER);
+    
+        showtimeFrame.add(showtimePanel);
+        showtimeFrame.setSize(400, 300);
+        showtimeFrame.setLocationRelativeTo(null);
+        showtimeFrame.setVisible(true);
     }
     
 
@@ -717,10 +744,8 @@ private void addMovie() {
 
                 seatButtons[row][col].addActionListener((e) -> {
                     JButton selectedButton = (JButton) e.getSource();
-        
                     selectedButton.setBackground(Color.YELLOW); 
                     selectedButton.setEnabled(false);  
-
                     showPaymentPage(selectedMovie, selectedButton.getText(), movieId, seat);
                     frame.dispose();
                 });
@@ -733,9 +758,6 @@ private void addMovie() {
         frame.setSize(400, 400);
         frame.setVisible(true);
     }
-
-    
-    
 
     // Payment Page
     private void showPaymentPage(Movie selectedMovie, String selectedSeat, int movieId, Seat seat) {
