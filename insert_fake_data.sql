@@ -6,8 +6,8 @@ USE AcmePlex;
 INSERT INTO movies (movieID, title, duration, genre, availableToPublic, preReleasedTicketsLeft) VALUES
 (1, 'Inception', 148, 'Sci-Fi', TRUE, 2),
 (2, 'The Dark Knight', 152, 'Action', TRUE, 2),
-(3, 'Interstellar', 169, 'Sci-Fi', TRUE, 2);
-(4, 'Shrek', 120, 'Comedy', TRUE, 2);
+(3, 'Interstellar', 169, 'Sci-Fi', TRUE, 2),
+(4, 'Shrek', 120, 'Comedy', TRUE, 2),
 (5, 'Shutter Island', 120, 'Thriller', FALSE, 2);
 
 
