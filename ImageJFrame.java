@@ -538,127 +538,134 @@ public class ImageJFrame {
 
     // Seat Selection
     private void showSeatSelectionPage(Movie selectedMovie, int movieId) {
-        JFrame seatFrame = new JFrame("Select Seat");
-    
-        JPanel seatPanel = new JPanel(new GridLayout(5, 5, 5, 5)); // 5x5 grid for seats
-        JButton[][] seats = new JButton[5][5];
-    
-        for (int row = 0; row < 5; row++) {
-            for (int col = 0; col < 5; col++) {
-                seats[row][col] = new JButton("Seat " + (row * 5 + col + 1));
-                seatPanel.add(seats[row][col]);
-                seats[row][col].addActionListener(e -> {
-                    JButton selectedSeat = (JButton) e.getSource();
-                    selectedSeat.setBackground(Color.GREEN);
-                    selectedSeat.setEnabled(false);
-                    showPaymentPage(selectedMovie, selectedSeat.getText(), movieId);
-                    seatFrame.dispose();
+        JFrame frame = new JFrame("Select Seat");
+        JPanel panel = new JPanel(new GridLayout(5, 5, 5, 5));  // 5x5 grid for seats
+        JButton[][] seatButtons = new JButton[5][5];
+        
+        SeatMap seatMap = movieController.getSeatMapForMovie(movieId);  
+
+        for (int row = 0; row < 5; ++row) {
+            for (int col = 0; col < 5; ++col) {
+                Seat seat = seatMap.getSeats().get(row * 5 + col);  
+        
+                seatButtons[row][col] = new JButton("Seat " + (row * 5 + col + 1));
+                panel.add(seatButtons[row][col]);
+
+                seatButtons[row][col].setOpaque(true);
+                if (seat.getAvailability().equals("booked")) {
+                    seatButtons[row][col].setBackground(Color.RED);
+                    seatButtons[row][col].setEnabled(false);  
+                } else {
+                    seatButtons[row][col].setBackground(Color.GREEN);
+                }
+
+                seatButtons[row][col].addActionListener((e) -> {
+                    JButton selectedButton = (JButton) e.getSource();
+        
+                    selectedButton.setBackground(Color.YELLOW); 
+                    selectedButton.setEnabled(false);  
+
+                    showPaymentPage(selectedMovie, selectedButton.getText(), movieId, seat);
+                    frame.dispose();
                 });
             }
         }
-    
-        seatFrame.add(seatPanel);
-        seatFrame.setSize(400, 400);
-        seatFrame.setVisible(true);
+
+        frame.add(panel);
+        panel.revalidate();  
+        panel.repaint();    
+        frame.setSize(400, 400);
+        frame.setVisible(true);
     }
+
+    
     
 
     // Payment Page
-    private void showPaymentPage(Movie selectedMovie, String selectedSeat, int movieId) {
+    private void showPaymentPage(Movie selectedMovie, String selectedSeat, int movieId, Seat seat) {
         JFrame paymentFrame = new JFrame("Payment");
-
         JPanel paymentPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.anchor = GridBagConstraints.WEST;
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.insets = new Insets(10, 10, 10, 10);
+        constraints.anchor = GridBagConstraints.WEST;
     
         JLabel movieLabel = new JLabel("Movie: " + selectedMovie.getTitle());
         JLabel seatLabel = new JLabel("Seat: " + selectedSeat);
-        JLabel cardholderLabel = new JLabel("Cardholder Name:");
-        JTextField cardholderField = new JTextField(20);
+        JLabel nameLabel = new JLabel("Cardholder Name:");
+        JTextField nameField = new JTextField(20);
         JLabel cardNumberLabel = new JLabel("Card Number:");
         JTextField cardNumberField = new JTextField(20);
-        JLabel expiryDateLabel = new JLabel("Expiry Date (YYYY-MM-DD):");
-        JTextField expiryDateField = new JTextField(10);
+        JLabel expiryLabel = new JLabel("Expiry Date (YYYY-MM-DD):");
+        JTextField expiryField = new JTextField(10);
         JLabel cvvLabel = new JLabel("CVV:");
         JTextField cvvField = new JTextField(4);
         JButton confirmButton = new JButton("Confirm Payment");
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        paymentPanel.add(movieLabel, gbc);
-
-        gbc.gridy = 1;
-        paymentPanel.add(seatLabel, gbc);
-
-        gbc.gridy = 2;
-        paymentPanel.add(cardholderLabel, gbc);
-        gbc.gridx = 1;
-        cardholderField.setPreferredSize(new Dimension(300, 30));
-        paymentPanel.add(cardholderField, gbc);
-        gbc.gridx = 0;
-
-        gbc.gridy = 3;
-        paymentPanel.add(cardNumberLabel, gbc);
-        gbc.gridx = 1;
-        cardNumberField.setPreferredSize(new Dimension(300, 30));
-        paymentPanel.add(cardNumberField, gbc);
-        gbc.gridx = 0;
-
-        gbc.gridy = 4;
-        paymentPanel.add(expiryDateLabel, gbc);
-        gbc.gridx = 1;
-        expiryDateField.setPreferredSize(new Dimension(300, 30));
-        paymentPanel.add(expiryDateField, gbc);
-        gbc.gridx = 0;
-
-        gbc.gridy = 5;
-        paymentPanel.add(cvvLabel, gbc);
-        gbc.gridx = 1;
-        cvvField.setPreferredSize(new Dimension(300, 30));
-        paymentPanel.add(cvvField, gbc);
-        gbc.gridx = 0;
-
-        gbc.gridy = 6;
-        gbc.gridwidth = 2;
-        paymentPanel.add(confirmButton, gbc);
-
-        confirmButton.addActionListener(e -> {
-            String cardholderName = cardholderField.getText();
+    
+        // Layout components
+        paymentPanel.add(movieLabel, constraints);
+        constraints.gridy = 1;
+        paymentPanel.add(seatLabel, constraints);
+        constraints.gridy = 2;
+        paymentPanel.add(nameLabel, constraints);
+        constraints.gridx = 1;
+        paymentPanel.add(nameField, constraints);
+        constraints.gridx = 0;
+        constraints.gridy = 3;
+        paymentPanel.add(cardNumberLabel, constraints);
+        constraints.gridx = 1;
+        paymentPanel.add(cardNumberField, constraints);
+        constraints.gridx = 0;
+        constraints.gridy = 4;
+        paymentPanel.add(expiryLabel, constraints);
+        constraints.gridx = 1;
+        paymentPanel.add(expiryField, constraints);
+        constraints.gridx = 0;
+        constraints.gridy = 5;
+        paymentPanel.add(cvvLabel, constraints);
+        constraints.gridx = 1;
+        paymentPanel.add(cvvField, constraints);
+        constraints.gridx = 0;
+        constraints.gridy = 6;
+        constraints.gridwidth = 2;
+        paymentPanel.add(confirmButton, constraints);
+    
+        confirmButton.addActionListener((e) -> {
+            String name = nameField.getText();
             String cardNumber = cardNumberField.getText();
-            String expiryDate = expiryDateField.getText();
+            String expiryDate = expiryField.getText();
             String cvv = cvvField.getText();
-
-            if (cardholderName.isEmpty() || cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
-                JOptionPane.showMessageDialog(paymentFrame, "Please fill in payment details.", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (cardNumber.length() != 16 || cvv.length() != 3 || !expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                JOptionPane.showMessageDialog(paymentFrame, "Invalid card details or invalid date format", "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                FinancialInstitution financialInstitution = new FinancialInstitution(database);
-                PaymentController paymentController = new PaymentController(financialInstitution);
-
-                double amount = 15.00;
-                boolean paymentSuccess = paymentController.processPayment(cardNumber, cvv, expiryDate, cardholderName, amount);
-
-                if (paymentSuccess) {
-                    boolean bookingSuccess = movieController.bookTicketForMovie(movieId, userType.equals("guest"));
-                    if (bookingSuccess) {
-                        JOptionPane.showMessageDialog(paymentFrame, "Payment and ticket booking successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                        paymentFrame.dispose();
+    
+            if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
+                if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
+                    PaymentController paymentController = new PaymentController(financialInstitution);
+                    double amount = 15.0; 
+                    boolean paymentSuccess = paymentController.processPayment(cardNumber, cvv, expiryDate, name, amount);
+    
+                    if (paymentSuccess) {
+                        seat.setAvailability("booked");
+    
+                        movieController.updateSeatAvailability(seat);
+    
+                        JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        paymentFrame.dispose();  
                     } else {
-                        JOptionPane.showMessageDialog(paymentFrame, "Payment successful, but could not book ticket.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(paymentFrame, "Payment failed.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(paymentFrame, "Payment failed.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(paymentFrame, "Invalid card details or invalid date format", "Error", JOptionPane.ERROR_MESSAGE);
                 }
+            } else {
+                JOptionPane.showMessageDialog(paymentFrame, "Please fill in payment details.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
+    
         paymentFrame.add(paymentPanel);
-        paymentFrame.setSize(500, 400); 
+        paymentFrame.setSize(500, 400);
         paymentFrame.setLocationRelativeTo(null);
         paymentFrame.setVisible(true);
     }
+    
 
 
 

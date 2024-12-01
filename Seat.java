@@ -1,10 +1,13 @@
 public class Seat {
     private String availability; //either Available or Booked
     private int row;
-    private int column;
+    private char column;
+    private int seatId;
 
-    public Seat(int row, int column) {
-        this.availability = "Available";
+
+    public Seat(int seatId, int row, char column, String availability) {
+        this.seatId = seatId;
+        this.availability = availability;
         this.row = row;
         this.column = column;
     }
@@ -21,8 +24,12 @@ public class Seat {
         return row;
     }
 
-    public int getColumn() {
+    public char getColumn() {
         return column;
+    }
+
+    public int getSeatId(){
+        return this.seatId;
     }
 
     @Override
