@@ -12,6 +12,6 @@ CREATE TABLE IF NOT EXISTS seats ( seatID INT AUTO_INCREMENT PRIMARY KEY, availa
 
 CREATE TABLE IF NOT EXISTS showtimes( showtimeID INT AUTO_INCREMENT primary key, movieID INT, FOREIGN KEY (movieID) REFERENCES movies(movieID) ON DELETE cascade, time VARCHAR(255));
 
-CREATE TABLE IF NOT EXISTS tickets ( ticketID INT AUTO_INCREMENT PRIMARY KEY, seatID INT, showtimeID INT, movieID INT, username VARCHAR(255), dateBought DATE, dateOfFilm DATE, cardNumber VARCHAR(255), FOREIGN KEY (seatID) REFERENCES seats(seatID) ON DELETE cascade, FOREIGN KEY (showtimeID) REFERENCES showtimes(showtimeID) ON DELETE cascade, FOREIGN KEY (movieID) REFERENCES movies(movieID) ON DELETE CASCADE, FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE, FOREIGN KEY (cardNumber) REFERENCES paymentInfo(cardNumber) ON DELETE CASCADE );
+CREATE TABLE IF NOT EXISTS tickets ( ticketID INT AUTO_INCREMENT PRIMARY KEY, seatID INT, showtimeID INT, movieID INT, username VARCHAR(255), dateBought DATE, dateOfFilm VARCHAR(255), cardNumber VARCHAR(255), FOREIGN KEY (seatID) REFERENCES seats(seatID) ON DELETE cascade, FOREIGN KEY (showtimeID) REFERENCES showtimes(showtimeID) ON DELETE cascade, FOREIGN KEY (movieID) REFERENCES movies(movieID) ON DELETE CASCADE, FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE, FOREIGN KEY (cardNumber) REFERENCES paymentInfo(cardNumber) ON DELETE CASCADE );
 
 CREATE TABLE IF NOT EXISTS giftCards ( giftCardID INT PRIMARY KEY, giftCardBalance DECIMAL(8, 2), expireDate DATE);
