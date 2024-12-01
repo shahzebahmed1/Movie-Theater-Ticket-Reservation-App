@@ -201,9 +201,19 @@ public class ImageJFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Username
+        // Add bolded message about the annual fee
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 4; // Span across all columns
+        JLabel feeMessage = new JLabel("<html><b>Upon registering, you will be charged a $20 annual fee.</b></html>");
+        registerPanel.add(feeMessage, gbc);
+
+        // Reset gridwidth for subsequent components
+        gbc.gridwidth = 1;
+
+        // Username
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         registerPanel.add(new JLabel("Username:"), gbc);
         gbc.gridx = 1;
         JTextField usernameField = new JTextField(15);
@@ -218,7 +228,7 @@ public class ImageJFrame {
 
         // Name
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         registerPanel.add(new JLabel("Name:"), gbc);
         gbc.gridx = 1;
         JTextField nameField = new JTextField(15);
@@ -233,7 +243,7 @@ public class ImageJFrame {
 
         // Initial Balance
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         registerPanel.add(new JLabel("Initial Balance:"), gbc);
         gbc.gridx = 1;
         JTextField balanceField = new JTextField(15);
@@ -248,8 +258,8 @@ public class ImageJFrame {
 
         // Expiry Date
         gbc.gridx = 0;
-        gbc.gridy = 3;
-        registerPanel.add(new JLabel("Expiry Date (MM/YY):"), gbc);
+        gbc.gridy = 4;
+        registerPanel.add(new JLabel("Expiry Date (YYYY-MM-DD):"), gbc);
         gbc.gridx = 1;
         JTextField expiryDateField = new JTextField(15);
         registerPanel.add(expiryDateField, gbc);
@@ -263,7 +273,7 @@ public class ImageJFrame {
 
         // Register Button
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.gridwidth = 4;
         gbc.anchor = GridBagConstraints.CENTER;
         JButton registerButton = new JButton("Register");
@@ -271,14 +281,14 @@ public class ImageJFrame {
 
         // ActionListener for registration
         registerButton.addActionListener(e -> {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
-            String name = nameField.getText();
-            String address = addressField.getText();
-            String balanceText = balanceField.getText();
-            String cardNumber = cardNumberField.getText();
-            String expiryDate = expiryDateField.getText();
-            String cvv = cvvField.getText();
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+        String name = nameField.getText();
+        String address = addressField.getText();
+        String balanceText = balanceField.getText();
+        String cardNumber = cardNumberField.getText();
+        String expiryDate = expiryDateField.getText();
+        String cvv = cvvField.getText();
 
             // Validate inputs
             if (username.isEmpty() || password.isEmpty() || name.isEmpty() || address.isEmpty() || balanceText.isEmpty() ||
