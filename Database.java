@@ -391,7 +391,7 @@ public class Database {
     private Movie getMovieById(int movieID) throws SQLException {
         String query = "SELECT * FROM movies WHERE movieID = ?";
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
-             PreparedStatement ps = connection.prepareStatement(query)) {
+            PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, movieID);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -406,6 +406,26 @@ public class Database {
         }
         return null;
     }
+
+    public Showtime getShowtimeByMovie(int movieId) {
+        String query = "SELECT showtimeID, time FROM showtimes WHERE movieID = ?";
+
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+            PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, movieId);
+            ResultSet result = statement.executeQuery();
+            
+            if (result.next()) {
+                int showtimeId = result.getInt("showtimeID");
+                String time = result.getString("time");
+                return new Showtime(showtimeId, movieId, time);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
 
     private Showtime getShowtimeById(int showtimeID) throws SQLException {
         String query = "SELECT * FROM showtimes WHERE showtimeID = ?";
