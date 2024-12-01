@@ -598,7 +598,6 @@ public class ImageJFrame {
                 JOptionPane.showMessageDialog(paymentFrame, "Invalid card details or invalid date format", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 FinancialInstitution financialInstitution = new FinancialInstitution(database);
-                FinancialInstitution financialInstitution = new FinancialInstitution(database);
                 PaymentController paymentController = new PaymentController(financialInstitution);
 
                 double amount = 15.00;
