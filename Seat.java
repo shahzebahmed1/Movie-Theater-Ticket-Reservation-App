@@ -2,10 +2,10 @@ public class Seat {
     private int seatID;
     private boolean availability;
     private int row;
-    private String column;
+    private char column;
     private int movieID;
 
-    public Seat(int seatID, boolean availability, int row, String column, int movieID) {
+    public Seat(int seatID, boolean availability, int row, char column, int movieID) {
         this.seatID = seatID;
         this.availability = availability;
         this.row = row;
@@ -29,7 +29,7 @@ public class Seat {
         return row;
     }
 
-    public String getColumn() {
+    public char getColumn() {
         return column;
     }
 

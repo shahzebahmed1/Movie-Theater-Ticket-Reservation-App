@@ -331,7 +331,8 @@ public class Database {
                 if (rs.next()) {
                     boolean availability = rs.getBoolean("availability");
                     int row = rs.getInt("seat_row");
-                    String column = rs.getString("seat_column");
+                    String columnStr = rs.getString("seat_column");
+                    char column = columnStr != null && columnStr.length() > 0 ? columnStr.charAt(0) : ' ';
                     int movieID = rs.getInt("movieID");
                     return new Seat(seatID, availability, row, column, movieID);
                 }
