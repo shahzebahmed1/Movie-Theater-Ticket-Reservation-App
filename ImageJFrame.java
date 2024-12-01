@@ -472,13 +472,37 @@ public class ImageJFrame {
 
     // Delete Movie
     private void deleteMovie() {
-        String[] movieArray = movies.toArray(new String[0]);
-        String selectedMovie = (String) JOptionPane.showInputDialog(mainFrame, "Select a movie to delete:", "Delete Movie",
-                JOptionPane.QUESTION_MESSAGE, null, movieArray, movieArray[0]);
-        if (selectedMovie != null) {
-            movies.remove(selectedMovie);
-            JOptionPane.showMessageDialog(mainFrame, "Movie deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        ArrayList<Movie> movies = movieController.browseMovies(false);
+        if (movies.isEmpty()) {
+            JOptionPane.showMessageDialog(mainFrame, "No movies to delete", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+        String[] movieTitles = new String[movies.size()];
+        for (int i = 0; i < movies.size(); i++) {
+            movieTitles[i] = movies.get(i).getTitle();
+        }
+        String selectedMovieTitle = (String) JOptionPane.showInputDialog(mainFrame, "Select a movie to delete:", "Delete", JOptionPane.QUESTION_MESSAGE, null, movieTitles, movieTitles[0]);
+        if (selectedMovieTitle != null) {
+            Movie movieToRemove = null;
+            for (Movie movie : movies) {
+                if (movie.getTitle().equals(selectedMovieTitle)) {
+                    movieToRemove = movie;
+                    break;
+                }
+            }
+        
+            if (movieToRemove != null) {
+                try{
+                    database.removeMovie(movieToRemove.getMovieId());
+                }catch(SQLException e){
+                    System.err.println("error"+ e);
+                }
+                JOptionPane.showMessageDialog(mainFrame, "Movie deleted", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(mainFrame, "Movie not found", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        
     }
 
     // Manage Showtimes
