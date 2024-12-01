@@ -325,8 +325,7 @@ public class ImageJFrame {
         registerFrame.setLocationRelativeTo(null); // Center the frame
         registerFrame.setVisible(true);
     }
-    
-    
+
     // helper function to see if date is valid
     public boolean validDate(String date) {
     	
@@ -339,37 +338,51 @@ public class ImageJFrame {
         }
     }
 
-
-
     // Show Invoice Lookup Frame
     private void showInvoiceLookupFrame() {
         JFrame invoiceFrame = new JFrame("Invoice Lookup");
 
-        JPanel invoicePanel = new JPanel(new GridLayout(3, 1, 10, 10));
-        JLabel invoiceLabel = new JLabel("Enter Invoice Number:");
+        JPanel invoicePanel = new JPanel(new GridLayout(5, 1, 10, 10)); // Adjusted to 5 rows
+        JLabel invoiceLabel = new JLabel("Enter Invoice (ticketID) Number:");
         JTextField invoiceField = new JTextField();
+        JLabel cardNumberLabel = new JLabel("Confirm Card Number Used to Pay:");
+        JTextField cardNumberField = new JTextField();
         JButton lookupButton = new JButton("Lookup");
 
         invoicePanel.add(invoiceLabel);
         invoicePanel.add(invoiceField);
+        invoicePanel.add(cardNumberLabel);
+        invoicePanel.add(cardNumberField);
         invoicePanel.add(lookupButton);
 
         lookupButton.addActionListener(e -> {
             String invoiceNumber = invoiceField.getText();
-            // Simulate invoice lookup
-            if (invoiceNumber.equals("12345")) { // Replace with database logic
-                int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice Lookup", JOptionPane.YES_NO_OPTION);
-                if (option == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    invoiceFrame.dispose();
+            String cardNumber = cardNumberField.getText();
+            try {
+                int ticketID = Integer.parseInt(invoiceNumber);
+                boolean ticketFound = database.checkTicketExists(ticketID);
+                if (ticketFound) {
+                    boolean cardMatches = database.checkCardNumberForTicket(ticketID, cardNumber);
+                    if (cardMatches) {
+                        int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice Lookup", JOptionPane.YES_NO_OPTION);
+                        if (option == JOptionPane.YES_OPTION) {
+                            database.cancelTicket(ticketID);
+                            JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            invoiceFrame.dispose();
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(invoiceFrame, "Card number does not match the one used for this ticket.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(invoiceFrame, "Invalid Invoice Number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-            } else {
-                JOptionPane.showMessageDialog(invoiceFrame, "Invalid Invoice Number.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException | SQLException ex) {
+                JOptionPane.showMessageDialog(invoiceFrame, "Error processing invoice number.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         invoiceFrame.add(invoicePanel);
-        invoiceFrame.setSize(400, 200);
+        invoiceFrame.setSize(400, 300);
         invoiceFrame.setVisible(true);
     }
 
