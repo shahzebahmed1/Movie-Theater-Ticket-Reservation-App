@@ -351,11 +351,10 @@ public class Database {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int seatID = rs.getInt("seatID");
-                        int availabilityInt = rs.getInt("availability"); 
-                        String availability = (availabilityInt == 1) ? "available" : "booked"; 
+                        boolean availability = rs.getBoolean("availability");
                         int row = rs.getInt("seat_row");
                         String column = rs.getString("seat_column");
-                        Seat seat = new Seat(seatID, row, column.charAt(0), availability); 
+                        Seat seat = new Seat(seatID, availability, row, column.charAt(0), movieID); 
                         seats.add(seat);
                     }
                 } catch (Exception e) {

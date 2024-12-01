@@ -591,7 +591,7 @@ public class ImageJFrame {
                 panel.add(seatButtons[row][col]);
 
                 seatButtons[row][col].setOpaque(true);
-                if (seat.getAvailability().equals("booked")) {
+                if (!seat.getAvailability()) {
                     seatButtons[row][col].setBackground(Color.RED);
                     seatButtons[row][col].setEnabled(false);  
                 } else {
@@ -682,10 +682,8 @@ public class ImageJFrame {
                     boolean paymentSuccess = paymentController.processPayment(cardNumber, cvv, expiryDate, name, amount);
     
                     if (paymentSuccess) {
-                        seat.setAvailability("booked");
-    
+                        seat.setAvailability(false); 
                         movieController.updateSeatAvailability(seat);
-    
                         JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked.", "Success", JOptionPane.INFORMATION_MESSAGE);
                         paymentFrame.dispose();  
                     } else {
