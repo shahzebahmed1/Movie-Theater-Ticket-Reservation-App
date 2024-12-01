@@ -16,6 +16,7 @@ public class User {
     	
         Database db = new Database("root", "password"); // remember to change credentials
         User u = new User();
+        u.register(db, "pogman", "poggers", "Poggeth", "Pog Dr.", 100, "123456789", "123", "2004-03-27");
 
     }
 	
@@ -63,7 +64,7 @@ public class User {
 		
 	};
 	
-	public void register(Database db, String username, String password, String name, String address, double balance) {
+	public void register(Database db, String username, String password, String name, String address, double balance, String cardNumber, String cvv, String expireDate) {
 		
 		// create a connection
 		try (Connection connection = DriverManager.getConnection(db.DATABASE, db.USER, db.PASSWORD)) {
@@ -110,6 +111,26 @@ public class User {
                 System.out.println("user succesfully added!");
                 
             }
+            
+            // query to insert payment information of user into database
+            query = "INSERT INTO paymentinfo (cardNumber, cvv, expireDate, cardHolder, username) " +
+                    "VALUES (?, ?, ?, ?, ?)";
+            
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+
+                ps.setString(1, cardNumber);
+                ps.setString(2, cvv); 
+                ps.setDate(3, java.sql.Date.valueOf(expireDate));
+                ps.setString(4, name);
+                ps.setString(5, username);
+                
+                // execute the change
+                ps.executeUpdate();
+                
+                System.out.println("card succesfully added!");
+                
+            }
+            
             
         } catch (Exception e) {
             System.out.println("Something went wrong: " + e.getMessage());
