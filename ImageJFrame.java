@@ -692,7 +692,7 @@ public class ImageJFrame {
                     if (paymentSuccess) {
                         seat.setAvailability(false); 
                         movieController.updateSeatAvailability(seat);
-                        Ticket ticket = new Ticket(selectedMovie, new Showtime("12:00"), seat);  // Assuming selectedShowtime exists
+                        Ticket ticket = new Ticket(selectedMovie, new Showtime(1,selectedMovie.getMovieId(),"2023-12-01 19:00:00"), seat);  // Assuming selectedShowtime exists
                         try {
                             database.insertTicket(ticket, null, paymentInfo.getCardNumber(), new Date());
                         } catch (SQLException er) {

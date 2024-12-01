@@ -424,8 +424,9 @@ public class Database {
                 int seatId = result.getInt("seatID");
                 int row = result.getInt("seat_row");
                 char col = result.getString("seat_column").charAt(0);
-                String availability = (result.getInt("availability") == 1) ? "available" : "booked"; 
-                seat = new Seat(seatId, row, col, availability);
+                boolean availability = result.getInt("availability") == 1;
+                int movieId = result.getInt("movieID");
+                seat = new Seat(seatId, availability, row, col, movieId);
             }
         } catch (SQLException e) {
             System.out.println("Error getting seat details" + e);
@@ -442,7 +443,7 @@ public class Database {
             
             int movieID = ticket.getMovie().getMovieId();
             int showtimeID = 1; 
-            int seatID = ticket.getSeat().getSeatId(); 
+            int seatID = ticket.getSeat().getSeatID(); 
             preparedStatement.setInt(1, movieID);
             preparedStatement.setInt(2, showtimeID);
             preparedStatement.setInt(3, seatID);
