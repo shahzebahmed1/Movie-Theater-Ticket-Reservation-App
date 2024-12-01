@@ -557,24 +557,30 @@ public class Database {
     
     public void insertTicket(Ticket ticket, String username, String cardNumber, java.util.Date dateBought) throws SQLException {
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
-            String query = "INSERT INTO tickets (movieID, showtimeID, seatID, username, cardNumber, dateBought) VALUES (?, ?, ?, ?, ?, ?)";
-            
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            
-            int movieID = ticket.getMovie().getMovieId();
-            int showtimeID = 1; 
-            int seatID = ticket.getSeat().getSeatID(); 
-            preparedStatement.setInt(1, movieID);
-            preparedStatement.setInt(2, showtimeID);
-            preparedStatement.setInt(3, seatID);
-
-            if (username != null && !username.isEmpty()) {
-                preparedStatement.setString(4, username);  
-            } else {
-                preparedStatement.setNull(4, java.sql.Types.VARCHAR);  
+            String showtimeQuery = "SELECT time FROM showtimes WHERE showtimeID = ?";
+            String showtime = null;
+            try (PreparedStatement showtimeStatement = connection.prepareStatement(showtimeQuery)) {
+                showtimeStatement.setInt(1, ticket.getShowtime().getShowtimeID());
+                try (ResultSet rs = showtimeStatement.executeQuery()) {
+                    if (rs.next()) {
+                        showtime = rs.getString("time");
+                    }
+                }
             }
-            preparedStatement.setString(5, cardNumber);  
-            preparedStatement.setDate(6, new java.sql.Date(dateBought.getTime()));  
+
+            String query = "INSERT INTO tickets (movieID, showtimeID, seatID, username, cardNumber, dateBought, dateOfFilm) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, ticket.getMovie().getMovieId());
+            preparedStatement.setInt(2, ticket.getShowtime().getShowtimeID());
+            preparedStatement.setInt(3, ticket.getSeat().getSeatID());
+            if (username != null && !username.isEmpty()) {
+                preparedStatement.setString(4, username);
+            } else {
+                preparedStatement.setNull(4, java.sql.Types.VARCHAR);
+            }
+            preparedStatement.setString(5, cardNumber);
+            preparedStatement.setDate(6, new java.sql.Date(dateBought.getTime()));
+            preparedStatement.setString(7, showtime);
 
             int rowsChanged = preparedStatement.executeUpdate();
             if (rowsChanged > 0) {
@@ -586,7 +592,7 @@ public class Database {
             System.out.println("Error: " + e);
         }
     }
-    
+
     public ArrayList<String> getAllUsernames() throws SQLException {
         ArrayList<String> usernames = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {

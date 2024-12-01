@@ -705,7 +705,7 @@ public class ImageJFrame {
                 JButton showtimeButton = new JButton(showtime.getTime());
     
                 showtimeButton.addActionListener(e -> {
-                    showSeatSelectionPage(movie, movie.getMovieId());
+                    showSeatSelectionPage(movie, movie.getMovieId(), showtime.getShowtimeID());
                     showtimeFrame.dispose();  
                 });
                 buttonPanel.add(showtimeButton);
@@ -723,7 +723,7 @@ public class ImageJFrame {
     
 
     // Seat Selection
-    private void showSeatSelectionPage(Movie selectedMovie, int movieId) {
+    private void showSeatSelectionPage(Movie selectedMovie, int movieId, int showtimeId) {
         JFrame frame = new JFrame("Select Seat");
         JPanel panel = new JPanel(new GridLayout(5, 5, 5, 5));  // 5x5 grid for seats
         JButton[][] seatButtons = new JButton[5][5];
@@ -749,7 +749,7 @@ public class ImageJFrame {
                     JButton selectedButton = (JButton) e.getSource();
                     selectedButton.setBackground(Color.YELLOW); 
                     selectedButton.setEnabled(false);  
-                    showPaymentPage(selectedMovie, selectedButton.getText(), movieId, seat);
+                    showPaymentPage(selectedMovie, selectedButton.getText(), movieId, seat, showtimeId);
                     frame.dispose();
                 });
             }
@@ -763,7 +763,7 @@ public class ImageJFrame {
     }
 
     // Payment Page
-    private void showPaymentPage(Movie selectedMovie, String selectedSeat, int movieId, Seat seat) {
+    private void showPaymentPage(Movie selectedMovie, String selectedSeat, int movieId, Seat seat, int showtimeId) {
         JFrame paymentFrame = new JFrame("Payment");
         JPanel paymentPanel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -851,7 +851,7 @@ public class ImageJFrame {
                     if (paymentSuccess) {
                         seat.setAvailability(false);
                         movieController.updateSeatAvailability(seat);
-                        Ticket ticket = new Ticket(selectedMovie, new Showtime(1, selectedMovie.getMovieId(), "2023-12-01 19:00:00"), seat); // Assuming selectedShowtime exists
+                        Ticket ticket = new Ticket(selectedMovie, new Showtime(showtimeId, selectedMovie.getMovieId(), "2023-12-01 19:00:00"), seat); 
                         try {
                             String username = null;
                             if (getCurrentUser() != null) {
