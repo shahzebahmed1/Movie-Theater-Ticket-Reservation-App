@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class ImageJFrame {
@@ -96,7 +97,7 @@ public class ImageJFrame {
         layeredPane.add(buttonPanel, Integer.valueOf(1)); // Add buttons at the foreground layer
 
         // Initialize database and movie controller
-        database = new Database("root", "password");
+        database = new Database("root", "password"); // use your credentials!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         movieController = new MovieController(database);
 
         // ActionListener for buttons
@@ -143,6 +144,8 @@ public class ImageJFrame {
         loginSubmitButton.addActionListener(e -> {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
+            
+            User u = new User();
 
             if (username.equals("admin") && password.equals("admin123")) {
                 JOptionPane.showMessageDialog(loginFrame, "Admin Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -153,17 +156,23 @@ public class ImageJFrame {
                 loginButton.setVisible(false);
                 createAccountButton.setVisible(false);
                 loginFrame.dispose();
-            } else if (username.equals("user") && password.equals("user123")) {
-                JOptionPane.showMessageDialog(loginFrame, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                userType = "user";
-                logoutButton.setVisible(true);
-                orderHistoryButton.setVisible(true);
-                loginButton.setVisible(false);
-                createAccountButton.setVisible(false);
-                loginFrame.dispose();
-            } else {
-                JOptionPane.showMessageDialog(loginFrame, "Invalid credentials.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            } else
+				try {
+					if (u.login(database, username, password)) {
+					    JOptionPane.showMessageDialog(loginFrame, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+					    userType = "user";
+					    logoutButton.setVisible(true);
+					    orderHistoryButton.setVisible(true);
+					    loginButton.setVisible(false);
+					    createAccountButton.setVisible(false);
+					    loginFrame.dispose();
+					} else {
+					    JOptionPane.showMessageDialog(loginFrame, "Invalid credentials.", "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (HeadlessException | SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
         });
 
         loginFrame.add(loginPanel);
