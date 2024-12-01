@@ -17,7 +17,7 @@ public class User {
     	
         Database db = new Database("root", "password"); // remember to change credentials
         User u = new User();
-        u.register(db, "pogman", "poggers", "Poggeth", "Pog Dr.", 100, "12345", "123", "2004-03-27");
+        u.register(db, "pogman", "poggers", "Poggeth", "Pog Dr.", "12345", "123", "2004-03-27");
 
     }
 	
@@ -65,7 +65,7 @@ public class User {
 		
 	};
 	
-	public void register(Database db, String username, String password, String name, String address, double balance, String cardNumber, String cvv, String expireDate) {
+	public boolean register(Database db, String username, String password, String name, String address, String cardNumber, String cvv, String expireDate) {
 		
 		// create a connection
 		try (Connection connection = DriverManager.getConnection(db.DATABASE, db.USER, db.PASSWORD)) {
@@ -81,11 +81,29 @@ public class User {
             		
     				if (rs.getString("username").equals(username)) {
     					System.out.println("username taken");
-    					return;
+    					return false;
     				}
     			}
 
             }
+            
+            query = "SELECT cardNumber FROM paymentinfo";
+            
+         // put result of query in a result set
+            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+            	
+            	// check if card number is already taken
+            	while (rs.next()) {
+            		
+    				if (rs.getString("cardNumber").equals(cardNumber)) {
+    					System.out.println("card number taken");
+    					return false;
+    				}
+    			}
+
+            }
+            
+            
         	
         	// query to insert user into database
             query = "INSERT INTO users (username, password, name, address, isAnnualFeePaid, annualFeeDate) " +
@@ -123,7 +141,7 @@ public class User {
                 ps.setDate(3, java.sql.Date.valueOf(expireDate));
                 ps.setString(4, name);
                 ps.setString(5, username);
-                ps.setDouble(6, balance);
+                ps.setDouble(6, 0);
                 
                 // execute the change
                 ps.executeUpdate();
@@ -133,9 +151,12 @@ public class User {
             }
             
             
+            
         } catch (Exception e) {
             System.out.println("Something went wrong: " + e.getMessage());
         }
+		
+		return true;
 	};
 
     public void addTicket(Ticket ticket) {

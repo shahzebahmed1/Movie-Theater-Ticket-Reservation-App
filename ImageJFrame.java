@@ -303,7 +303,7 @@ public class ImageJFrame {
 
         // Expiry Date (MM-YY format)
         gbc.gridx = 2;
-        registerPanel.add(new JLabel("Expiry Date (MM-YY):"), gbc);
+        registerPanel.add(new JLabel("Expiry Date (YYYY-MM-DD):"), gbc);
         gbc.gridx = 3;
         JTextField expiryDateField = new JTextField(15);
         registerPanel.add(expiryDateField, gbc);
@@ -353,9 +353,9 @@ public class ImageJFrame {
                 return;
             }
 
-            // Check for a valid expiry date in MM-YY format
-            if (!validExpiryDate(expiryDate)) {
-                JOptionPane.showMessageDialog(registerFrame, "Please enter a valid expiry date in MM-YY format.", "Error", JOptionPane.ERROR_MESSAGE);
+            // Check for a valid expiry date in yyyy-MM-dd format
+            if (!validDate(expiryDate)) {
+                JOptionPane.showMessageDialog(registerFrame, "Please enter a valid expiry date in yyyy-MM-dd format.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -365,12 +365,15 @@ public class ImageJFrame {
                 return;
             }
 
-            // Simulate user registration
             User u = new User();
-            u.register(database, username, password, name, address, 20.0, cardNumber, cvv, expiryDate); // Deduct $20 annual fee
+             if (u.register(database, username, password, name, address, cardNumber, cvv, expiryDate)) {
+            	 JOptionPane.showMessageDialog(registerFrame, "Registration successful! Your membership is valid till: " + formattedDate, "Success", JOptionPane.INFORMATION_MESSAGE);
+                 registerFrame.dispose();
+             } else {
+            	 JOptionPane.showMessageDialog(registerFrame, "Registration not successful! Duplicate username or card number exists ", "Error", JOptionPane.INFORMATION_MESSAGE);
+             }
 
-            JOptionPane.showMessageDialog(registerFrame, "Registration successful! Your membership is valid till: " + formattedDate, "Success", JOptionPane.INFORMATION_MESSAGE);
-            registerFrame.dispose();
+            
         });
 
         // Add the panel to the frame
@@ -380,9 +383,16 @@ public class ImageJFrame {
         registerFrame.setVisible(true);
     }
 
-    // Helper method to validate MM-YY format
-    private boolean validExpiryDate(String expiryDate) {
-        return expiryDate.matches("^(0[1-9]|1[0-2])-(\\d{2})$");
+    // helper function to see if date is valid
+    public boolean validDate(String date) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // format the date should be
+        try {
+            LocalDate d = LocalDate.parse(date, formatter);
+            return true; // if we can parse the data, then it is a valid date
+        } catch (DateTimeParseException e) {
+            return false; // otherwise its invalid
+        }
     }
 
     // Show Invoice Lookup Frame
