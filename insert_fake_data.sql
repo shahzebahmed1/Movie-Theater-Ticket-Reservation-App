@@ -4,15 +4,21 @@ USE AcmePlex;
 
 -- fake movies
 INSERT INTO movies (movieID, title, duration, genre, availableToPublic, preReleasedTicketsLeft) VALUES
-(1, 'Inception', 148, 'Sci-Fi', TRUE, 50),
-(2, 'The Dark Knight', 152, 'Action', TRUE, 30),
-(3, 'Interstellar', 169, 'Sci-Fi', TRUE, 40);
+(1, 'Inception', 148, 'Sci-Fi', TRUE, 2),
+(2, 'The Dark Knight', 152, 'Action', TRUE, 2),
+(3, 'Interstellar', 169, 'Sci-Fi', TRUE, 2);
+(4, 'Shrek', 120, 'Comedy', TRUE, 2);
+(5, 'Shutter Island', 120, 'Thriller', FALSE, 2);
+
+
 
 -- users
 INSERT INTO users (username, name, address, password, balance, isAnnualFeePaid, annualFeeDate) VALUES
 ('johndoe', 'John Doe', '123 Elm Street', 'password123', 100.00, TRUE, '2023-01-01'),
 ('janesmith', 'Jane Smith', '456 Oak Avenue', 'password456', 150.00, TRUE, '2023-02-01'),
 ('alicejohnson', 'Alice Johnson', '789 Pine Road', 'password789', 200.00, TRUE, '2023-03-01');
+
+
 
 -- payment info
 INSERT INTO paymentInfo (cardNumber, cvv, expireDate, cardHolder, username) VALUES

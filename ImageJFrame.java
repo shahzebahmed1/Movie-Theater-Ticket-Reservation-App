@@ -21,7 +21,6 @@ public class ImageJFrame {
 
     private Database database;
     private MovieController movieController;
-    private PaymentController paymentController;
 
     ImageJFrame() {
         // Add some default movies for testing
@@ -414,39 +413,61 @@ public class ImageJFrame {
         }
     }
 
-    // Movie Selection
+    //Movie Selection
     private void showMovieSelectionPage() {
         JFrame movieFrame = new JFrame("Select Movie");
-
+    
         JPanel moviePanel = new JPanel(new BorderLayout());
         JPanel searchPanel = new JPanel(new FlowLayout());
-
+    
         searchField = new JTextField(20);
         searchButton = new JButton("Search");
-
+    
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
-
-        ArrayList<Movie> allMovies = movieController.browseMovies();
+    
+        ArrayList<Movie> allMovies;
+        if(userType.equals("guest")){
+            allMovies = movieController.browseMovies(true);
+        } else {
+            allMovies = movieController.browseMovies(false);
+        }
+    
+        // Instead of just storing movie titles, store Movie objects in the list
+        ArrayList<Movie> movieListData = new ArrayList<>(allMovies);
         ArrayList<String> movieTitles = new ArrayList<>();
         for (Movie movie : allMovies) {
             movieTitles.add(movie.getTitle());
         }
-
+    
         JList<String> movieList = new JList<>(movieTitles.toArray(new String[0]));
         movieList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+    
         JButton nextButton = new JButton("Next");
         nextButton.addActionListener(e -> {
-            String selectedMovie = movieList.getSelectedValue();
-            if (selectedMovie != null) {
-                showSeatSelectionPage(selectedMovie);
-                movieFrame.dispose();
+            String selectedTitle = movieList.getSelectedValue();
+            if (selectedTitle != null) {
+                // Find the corresponding Movie object based on selected title
+                Movie selectedMovie = null;
+                for (Movie movie : movieListData) {
+                    if (movie.getTitle().equals(selectedTitle)) {
+                        selectedMovie = movie;
+                        break;
+                    }
+                }
+    
+                if (selectedMovie != null) {
+                    int movieId = selectedMovie.getMovieId();
+                    showSeatSelectionPage(selectedMovie, movieId);
+                    movieFrame.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(movieFrame, "Error finding selected movie.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(movieFrame, "Please select a movie.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
+    
         searchButton.addActionListener(e -> {
             String query = searchField.getText();
             if (!query.isEmpty()) {
@@ -456,7 +477,7 @@ public class ImageJFrame {
                         searchResults.add(movie.getTitle());
                     }
                 }
-
+    
                 if (searchResults.isEmpty()) {
                     JOptionPane.showMessageDialog(movieFrame, "No movies found matching the query.", "Info", JOptionPane.INFORMATION_MESSAGE);
                 } else {
@@ -466,24 +487,25 @@ public class ImageJFrame {
                 movieList.setListData(movieTitles.toArray(new String[0]));
             }
         });
-
+    
         moviePanel.add(new JLabel("Select a Movie and Showtime:"), BorderLayout.NORTH);
         moviePanel.add(searchPanel, BorderLayout.NORTH);
         moviePanel.add(new JScrollPane(movieList), BorderLayout.CENTER);
         moviePanel.add(nextButton, BorderLayout.SOUTH);
-
+    
         movieFrame.add(moviePanel);
         movieFrame.setSize(400, 300);
         movieFrame.setVisible(true);
     }
+    
 
     // Seat Selection
-    private void showSeatSelectionPage(String selectedMovie) {
+    private void showSeatSelectionPage(Movie selectedMovie, int movieId) {
         JFrame seatFrame = new JFrame("Select Seat");
-
+    
         JPanel seatPanel = new JPanel(new GridLayout(5, 5, 5, 5)); // 5x5 grid for seats
         JButton[][] seats = new JButton[5][5];
-
+    
         for (int row = 0; row < 5; row++) {
             for (int col = 0; col < 5; col++) {
                 seats[row][col] = new JButton("Seat " + (row * 5 + col + 1));
@@ -492,27 +514,28 @@ public class ImageJFrame {
                     JButton selectedSeat = (JButton) e.getSource();
                     selectedSeat.setBackground(Color.GREEN);
                     selectedSeat.setEnabled(false);
-                    showPaymentPage(selectedMovie, selectedSeat.getText());
+                    showPaymentPage(selectedMovie, selectedSeat.getText(), movieId);
                     seatFrame.dispose();
                 });
             }
         }
-
+    
         seatFrame.add(seatPanel);
         seatFrame.setSize(400, 400);
         seatFrame.setVisible(true);
     }
+    
 
     // Payment Page
-    private void showPaymentPage(String selectedMovie, String selectedSeat) {
+    private void showPaymentPage(Movie selectedMovie, String selectedSeat, int movieId) {
         JFrame paymentFrame = new JFrame("Payment");
 
         JPanel paymentPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.anchor = GridBagConstraints.WEST;
-
-        JLabel movieLabel = new JLabel("Movie: " + selectedMovie);
+    
+        JLabel movieLabel = new JLabel("Movie: " + selectedMovie.getTitle());
         JLabel seatLabel = new JLabel("Seat: " + selectedSeat);
         JLabel cardholderLabel = new JLabel("Cardholder Name:");
         JTextField cardholderField = new JTextField(20);
@@ -581,8 +604,13 @@ public class ImageJFrame {
                 boolean paymentSuccess = paymentController.processPayment(cardNumber, cvv, expiryDate, cardholderName, amount);
 
                 if (paymentSuccess) {
-                    JOptionPane.showMessageDialog(paymentFrame, "Payment successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    paymentFrame.dispose();
+                    boolean bookingSuccess = movieController.bookTicketForMovie(movieId, userType.equals("guest"));
+                    if (bookingSuccess) {
+                        JOptionPane.showMessageDialog(paymentFrame, "Payment and ticket booking successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        paymentFrame.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(paymentFrame, "Payment successful, but could not book ticket.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(paymentFrame, "Payment failed.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -590,7 +618,7 @@ public class ImageJFrame {
         });
 
         paymentFrame.add(paymentPanel);
-        paymentFrame.setSize(500, 400); // Adjusted frame size
+        paymentFrame.setSize(500, 400); 
         paymentFrame.setLocationRelativeTo(null);
         paymentFrame.setVisible(true);
     }

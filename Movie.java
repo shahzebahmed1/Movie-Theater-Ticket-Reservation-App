@@ -5,13 +5,17 @@ public class Movie {
     private String title;
     private String genre;
     private int duration; //assume minutes for now
+    private boolean availableToPublic;
+    private int preReleasedTickets;
     private ArrayList<Showtime> showtimes;
 
-    public Movie(int movieId, String title, String genre, int duration) {
+    public Movie(int movieId, String title, String genre, int duration, boolean availableToPublic, int preReleasedTickets) {
         this.movieId = movieId;
         this.title = title;
         this.genre = genre;
         this.duration = duration;
+        this.availableToPublic = availableToPublic;
+        this.preReleasedTickets = preReleasedTickets;
         this.showtimes = new ArrayList<>();
     }
 
@@ -31,6 +35,22 @@ public class Movie {
         return duration;
     }
 
+    public boolean isAvailableToPublic() {
+        return availableToPublic;
+    }
+
+    public void setAvailableToPublic(boolean availableToPublic) {
+        this.availableToPublic = availableToPublic;
+    }
+
+    public int getPreReleasedTickets() {
+        return preReleasedTickets;
+    }
+
+    public void setPreReleasedTickets(int preReleasedTickets) {
+        this.preReleasedTickets = preReleasedTickets;
+    }
+    
     public ArrayList<Showtime> getShowtimes() { //like the checkAvailability() in UML?
         return showtimes;
     }
@@ -43,8 +63,21 @@ public class Movie {
         this.showtimes.remove(showtime);
     }
 
+    public boolean canBookTicket(boolean isGuest) {
+        if (!availableToPublic && isGuest) {
+            return false; 
+        }
+        return preReleasedTickets > 0;
+    }
+
+    public void bookTicket() {
+        if (preReleasedTickets > 0) {
+            preReleasedTickets--;
+        }
+    }
+
     @Override
     public String toString() {
-        return "Movie [ID: " + movieId + ", Title: " + title + ", Genre: " + genre + ", Duration: " + duration + " mins, Showtimes: " + showtimes + "]";
+        return "Movie [ID: " + movieId + ", Title: " + title + ", Genre: " + genre + ", Duration: " + duration + " mins, Showtimes: " + showtimes + ", Available to public: " + availableToPublic + ", Pre-release tickets available: " + preReleasedTickets + "]";
     }
 }
