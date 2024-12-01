@@ -15,9 +15,9 @@ public class User {
 	
     public static void main(String[] args) throws SQLException {
     	
-        // Database db = new Database("root", "password"); // remember to change credentials
-        // User u = new User();
-        // u.register(db, "pogman", "poggers", "Poggeth", "Pog Dr.", 100, "123456789", "123", "2004-03-27");
+        Database db = new Database("root", "password"); // remember to change credentials
+        User u = new User();
+        u.register(db, "pogman", "poggers", "Poggeth", "Pog Dr.", 100, "12345", "123", "2004-03-27");
 
     }
 	
@@ -88,8 +88,8 @@ public class User {
             }
         	
         	// query to insert user into database
-            query = "INSERT INTO users (username, password, name, address, balance, isAnnualFeePaid, annualFeeDate) " +
-                           "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            query = "INSERT INTO users (username, password, name, address, isAnnualFeePaid, annualFeeDate) " +
+                           "VALUES (?, ?, ?, ?, ?, ?)";
             
             // create a prepared statement to put data into database
             try (PreparedStatement ps = connection.prepareStatement(query)) {
@@ -98,13 +98,12 @@ public class User {
                 ps.setString(2, password); 
                 ps.setString(3, name);
                 ps.setString(4, address);
-                ps.setDouble(5, balance);
-                ps.setBoolean(6, false); 
+                ps.setBoolean(5, false); 
                 
                 // want the annual fee date to be a year from today
                 LocalDate todaysDate = LocalDate.now();
                 LocalDate nextYearsDate = todaysDate.plus(1, ChronoUnit.YEARS);
-                ps.setDate(7, java.sql.Date.valueOf(nextYearsDate)); 
+                ps.setDate(6, java.sql.Date.valueOf(nextYearsDate)); 
                 
                 // execute the change
                 ps.executeUpdate();
@@ -114,8 +113,8 @@ public class User {
             }
             
             // query to insert payment information of user into database
-            query = "INSERT INTO paymentinfo (cardNumber, cvv, expireDate, cardHolder, username) " +
-                    "VALUES (?, ?, ?, ?, ?)";
+            query = "INSERT INTO paymentinfo (cardNumber, cvv, expireDate, cardHolder, username, balance) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
             
             try (PreparedStatement ps = connection.prepareStatement(query)) {
 
@@ -124,6 +123,7 @@ public class User {
                 ps.setDate(3, java.sql.Date.valueOf(expireDate));
                 ps.setString(4, name);
                 ps.setString(5, username);
+                ps.setDouble(6, balance);
                 
                 // execute the change
                 ps.executeUpdate();
