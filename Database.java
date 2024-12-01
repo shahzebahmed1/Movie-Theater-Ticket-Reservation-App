@@ -177,8 +177,8 @@ public class Database {
         }
     }
 
-    public void addMovie(String title, String genre, int duration, boolean availability, String showTime) {
-        String movieQuery = "INSERT INTO movies (title, duration, genre, availableToPublic, preReleasedTicketsLeft) VALUES (?, ?, ?, ?, ?)";
+    public void addMovie(String title, String genre, int duration, boolean availability, String showTime, double ticketPrice) {
+        String movieQuery = "INSERT INTO movies (title, duration, genre, availableToPublic, preReleasedTicketsLeft, ticketPrice) VALUES (?, ?, ?, ?, ?, ?)";
         String showtimeQuery = "INSERT INTO showtimes (movieID, time) VALUES (?, ?)";
         String seatQuery = "INSERT INTO seats (availability, seat_row, seat_column, movieID) VALUES (?, ?, ?, ?)";
         
@@ -192,6 +192,7 @@ public class Database {
             movieStatement.setString(3, genre);
             movieStatement.setBoolean(4, availability);
             movieStatement.setInt(5, 2);
+            movieStatement.setDouble(6, ticketPrice);
     
             int rowsAffected = movieStatement.executeUpdate();
     
