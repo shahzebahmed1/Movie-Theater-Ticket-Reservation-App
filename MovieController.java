@@ -72,7 +72,6 @@ public class MovieController {
             boolean availability = seat.getAvailability();
             int availabilityValue = availability ? 1 : 0;
             database.updateSeatAvailability(seat.getSeatID(), availabilityValue);
-            System.out.println("successfully updated seat");
         } catch (SQLException e) {
             System.out.println("Error updating seat" + e);
             return;

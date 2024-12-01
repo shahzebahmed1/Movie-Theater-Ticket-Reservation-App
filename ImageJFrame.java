@@ -694,7 +694,11 @@ public class ImageJFrame {
                         movieController.updateSeatAvailability(seat);
                         Ticket ticket = new Ticket(selectedMovie, new Showtime(1,selectedMovie.getMovieId(),"2023-12-01 19:00:00"), seat);  // Assuming selectedShowtime exists
                         try {
-                            database.insertTicket(ticket, null, paymentInfo.getCardNumber(), new Date());
+                            String username = null;
+                            if (getCurrentUser() != null) {
+                                username = getCurrentUser().getUsername();
+                            }
+                            database.insertTicket(ticket, username, paymentInfo.getCardNumber(), new Date());
                         } catch (SQLException er) {
                             System.out.println("Error " + er);
                         }
