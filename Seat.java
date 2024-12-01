@@ -35,6 +35,7 @@ public class Seat {
 
     public int getMovieID() {
         return movieID;
+
     }
 
     @Override

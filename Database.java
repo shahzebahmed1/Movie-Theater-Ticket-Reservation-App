@@ -27,7 +27,7 @@ public class Database {
         // db.getAllTickets();
         // db.insertCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
         // db.validateCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
-
+        //db.getSeatsForMovie(1);
     }
     
     public void getMovies() throws SQLException {
@@ -340,4 +340,53 @@ public class Database {
         }
         return null;
     }
+
+    public ArrayList<Seat> getSeatsForMovie(int movieID) throws SQLException {
+        ArrayList<Seat> seats = new ArrayList<>();
+        
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT * FROM seats WHERE movieID = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setInt(1, movieID);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int seatID = rs.getInt("seatID");
+                        int availabilityInt = rs.getInt("availability"); 
+                        String availability = (availabilityInt == 1) ? "available" : "booked"; 
+                        int row = rs.getInt("seat_row");
+                        String column = rs.getString("seat_column");
+                        Seat seat = new Seat(seatID, row, column.charAt(0), availability); 
+                        seats.add(seat);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error " + e);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e);
+        }
+        System.out.println("success");
+        return seats;
+        
+    }
+
+    public boolean updateSeatAvailability(int seatId, int availability) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "UPDATE seats SET availability = ? WHERE seatID = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setInt(1, availability);
+                ps.setInt(2, seatId);
+                int rowsUpdated = ps.executeUpdate();
+                
+                return rowsUpdated > 0;
+            } catch (SQLException e) {
+                System.out.println("Error updating seat" + e);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error " + e);
+            return false;
+        }
+    }
+
 }
