@@ -17,12 +17,12 @@ public class FinancialInstitution {
         System.out.println("Card added to the database.");
     }
 
-    public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) {
+    public boolean validateCard(PaymentInfo paymentInfo) {
         boolean result = false;
         try{
-            result = database.validateCard(cardNumber, cvv, expiryDate, cardHolderName);
+            result = database.validateCard(paymentInfo);
         }catch(SQLException e){
-            System.out.println("Could not validate payment information " + e);
+            System.out.println("Could not validate payment information: " + e);
         }
         return result;
     }
