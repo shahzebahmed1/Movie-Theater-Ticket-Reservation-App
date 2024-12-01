@@ -512,12 +512,26 @@ public class ImageJFrame {
 
     // Delete User
     private void deleteUser() {
-        String[] userArray = users.toArray(new String[0]);
-        String selectedUser = (String) JOptionPane.showInputDialog(mainFrame, "Select a user to delete:", "Delete User",
-                JOptionPane.QUESTION_MESSAGE, null, userArray, userArray[0]);
-        if (selectedUser != null) {
-            users.remove(selectedUser);
-            JOptionPane.showMessageDialog(mainFrame, "User deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        try {
+            ArrayList<String> usernames = database.getAllUsernames();
+        
+            if (usernames.isEmpty()) {
+                JOptionPane.showMessageDialog(mainFrame, "No users to delete", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
+    
+            String selectedUser = (String) JOptionPane.showInputDialog(mainFrame, "Select a user to delete:", "Delete User",
+            JOptionPane.QUESTION_MESSAGE, null, usernames.toArray(new String[0]), usernames.get(0));
+            if (selectedUser != null) {
+                if (database.deleteUserFromDatabase(selectedUser)) {
+                    JOptionPane.showMessageDialog(mainFrame, "User deleted", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame, "Error deleting user", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(mainFrame, "Error" + e, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
