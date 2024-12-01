@@ -56,5 +56,27 @@ public class MovieController {
         return false;
     }
     
+    public SeatMap getSeatMapForMovie(int movieId){
+        try{
+            ArrayList<Seat> seats = database.getSeatsForMovie(movieId);
+            return new SeatMap(seats);
+        }catch(SQLException e){
+            System.err.println("Error fetching seats" + e);
+
+        }
+        return null;
+    }
+
+    public void updateSeatAvailability(Seat seat) {
+        try {
+            String availability = seat.getAvailability();
+            int availabilityValue = (availability.equals("booked")) ? 0 : 1;
+            database.updateSeatAvailability(seat.getSeatId(), availabilityValue);
+            System.out.println("successfully updated seat");
+        } catch (SQLException e) {
+            System.out.println("Error updating seat" + e);
+            return;
+        }
+    }
 
 }
