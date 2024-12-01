@@ -259,7 +259,7 @@ public class ImageJFrame {
         // Expiry Date
         gbc.gridx = 0;
         gbc.gridy = 4;
-        registerPanel.add(new JLabel("Expiry Date (YYYY-MM-DD):"), gbc);
+        registerPanel.add(new JLabel("Expiry Date (MM/YY):"), gbc);
         gbc.gridx = 1;
         JTextField expiryDateField = new JTextField(15);
         registerPanel.add(expiryDateField, gbc);
