@@ -11,6 +11,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.HashSet;
 import java.time.LocalTime;
+import java.util.Random;
 
 
 public class ImageJFrame {
@@ -428,10 +429,29 @@ public class ImageJFrame {
                             seat.setAvailability(true);
                             movieController.updateSeatAvailability(seat);
                             database.cancelTicket(ticketID);
-
                             
-                            JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                            invoiceFrame.dispose();
+                            // create a ticket
+                            Ticket t = new Ticket();
+                            
+                            // if ticket does not have a cardnumber with a username associate with it create a giftcard
+                            if (!t.doesCardHaveUser(database, cardNumber)) {
+                            	
+                            	// create a random 5 digit number
+                            	Random rand = new Random();
+                            	int giftCardID = 10000 + rand.nextInt(90000);
+                            	
+                            	GiftCard g = new GiftCard();
+                            	g.createCard(database, giftCardID, 1); // shouldn't be 1, should be 85% of ticket price
+                            	
+                            	JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Gift Card created with 85% value with ID: " + giftCardID, "Success", JOptionPane.INFORMATION_MESSAGE);
+                                invoiceFrame.dispose();
+                            	
+                            } else {
+                            	JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                invoiceFrame.dispose();
+                            }
+                            
+                            
                         }
                     } else {
                         JOptionPane.showMessageDialog(invoiceFrame, "Card number does not match the one used for this ticket.", "Error", JOptionPane.ERROR_MESSAGE);
