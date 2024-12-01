@@ -9,10 +9,10 @@ public class MovieController {
         this.database = database;
     }
 
-    public ArrayList<Movie> browseMovies() {
+    public ArrayList<Movie> browseMovies(boolean availableToPublic) {
         ArrayList<Movie> movies = new ArrayList<>();
         try {
-            movies = database.getAllMovies();
+            movies = database.getAllMovies(availableToPublic);
         } catch (SQLException e) {
             System.out.println("Error fetching movies: " + e.getMessage());
         }
@@ -29,5 +29,32 @@ public class MovieController {
         }
         return results;
     }
+
+    
+    public boolean bookTicketForMovie(int movieId, boolean isGuest) {
+        ArrayList<Movie> movies = browseMovies(isGuest);
+    
+        for (Movie movie : movies) {
+            if (movie.getMovieId() == movieId) {
+                if (movie.canBookTicket(isGuest)) {
+                    movie.bookTicket();
+                    try {
+                        database.updateMovieInDatabase(movie); 
+                    } catch (SQLException e) {
+                        System.out.println("Error updating pre-release tickets" + e);
+                        return false;
+                    }
+                    return true; 
+                } else {
+                    System.out.println("Cannot book ticket");
+                    return false; 
+                }
+            }
+        }
+    
+        System.out.println("Movie not found.");
+        return false;
+    }
+    
 
 }

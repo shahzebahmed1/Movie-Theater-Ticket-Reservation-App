@@ -96,19 +96,24 @@ public class Database {
     }
 
 
-    public ArrayList<Movie> getAllMovies() throws SQLException {
+    public ArrayList<Movie> getAllMovies(boolean availability) throws SQLException {
         ArrayList<Movie> movies = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
             String query = "SELECT * FROM movies";
+            if (availability){
+                query+= " WHERE availableToPublic = TRUE";
+            }
             try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int movieID = rs.getInt("movieID");
                     String title = rs.getString("title");
                     int duration = rs.getInt("duration");
                     String genre = rs.getString("genre");
+                    boolean availableToPublic = rs.getBoolean("availableToPublic");
+                    int preReleasedTickets = rs.getInt("preReleasedTicketsleft");
                     System.out.println("Movie ID: " + movieID + ", Title: " + title + ", Duration: " + duration + " mins, Genre: " + genre);
-                    Movie movie = new Movie(movieID, title, genre, duration);
+                    Movie movie = new Movie(movieID, title, genre, duration, availableToPublic, preReleasedTickets);
                     movies.add(movie);
                 }
             } catch (Exception e) {
@@ -119,6 +124,25 @@ public class Database {
         }
         return movies;
 
+    }
+
+
+    public void updateMovieInDatabase(Movie movie) throws SQLException{
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "UPDATE movies SET preReleasedTicketsleft = ? WHERE movieID = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setInt(1, movie.getPreReleasedTickets());
+                ps.setInt(2, movie.getMovieId());
+                int rowsUpdated = ps.executeUpdate();
+                if (rowsUpdated > 0) {
+                    System.out.println("Update pre-release ticket number for movie");
+                } else {
+                    System.out.println("Could not update pre-release ticket number");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error" + e);
+        }
     }
 
     public void getAllUsers() throws SQLException {
