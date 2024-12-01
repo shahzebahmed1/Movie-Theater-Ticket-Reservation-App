@@ -777,6 +777,21 @@ public class ImageJFrame {
         JTextField cvvField = new JTextField(4);
         JButton confirmButton = new JButton("Confirm Payment");
     
+        // Autofill credit card information if user is logged in
+        if (currentUser != null) {
+            PaymentInfo paymentInfo = database.getPaymentInfoForUser(currentUser.getUsername());
+            if (paymentInfo != null) {
+                nameField.setText(paymentInfo.getCardHolderName());
+                cardNumberField.setText(paymentInfo.getCardNumber());
+                expiryField.setText(paymentInfo.getExpiryDate());
+                cvvField.setText(paymentInfo.getCvv());
+                nameField.setEditable(false);
+                cardNumberField.setEditable(false);
+                expiryField.setEditable(false);
+                cvvField.setEditable(false);
+            }
+        }
+    
         paymentPanel.add(movieLabel, constraints);
         constraints.gridy = 1;
         paymentPanel.add(seatLabel, constraints);
@@ -812,28 +827,38 @@ public class ImageJFrame {
     
             if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
                 if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                    FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
-                    PaymentController paymentController = new PaymentController(financialInstitution);
-                    double amount = 15.0; 
-                    PaymentInfo paymentInfo = new PaymentInfo(cardNumber, cvv, expiryDate, name);
-                    boolean paymentSuccess = paymentController.processPayment(paymentInfo, amount);
+                    boolean paymentSuccess = false;
+                    if (currentUser != null) {
+                        FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
+                        PaymentController paymentController = new PaymentController(financialInstitution);
+                        double amount = 15.0;
+                        PaymentInfo paymentInfo = new PaymentInfo(cardNumber, cvv, expiryDate, name);
+                        paymentSuccess = paymentController.processPayment(paymentInfo, amount);
+                    } else {
+                        try {
+                            database.insertCard(cardNumber, cvv, expiryDate, name);
+                            paymentSuccess = true;
+                        } catch (SQLException ex) {
+                            System.out.println("Error adding card to database: " + ex);
+                        }
+                    }
     
                     if (paymentSuccess) {
-                        seat.setAvailability(false); 
+                        seat.setAvailability(false);
                         movieController.updateSeatAvailability(seat);
-                        Ticket ticket = new Ticket(selectedMovie, new Showtime(1,selectedMovie.getMovieId(),"2023-12-01 19:00:00"), seat);  // Assuming selectedShowtime exists
+                        Ticket ticket = new Ticket(selectedMovie, new Showtime(1, selectedMovie.getMovieId(), "2023-12-01 19:00:00"), seat); // Assuming selectedShowtime exists
                         try {
                             String username = null;
                             if (getCurrentUser() != null) {
                                 username = getCurrentUser().getUsername();
                             }
-                            database.insertTicket(ticket, username, paymentInfo.getCardNumber(), new Date());
+                            database.insertTicket(ticket, username, cardNumber, new Date());
                         } catch (SQLException er) {
                             System.out.println("Error " + er);
                         }
     
                         JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                        paymentFrame.dispose();  
+                        paymentFrame.dispose();
                     } else {
                         JOptionPane.showMessageDialog(paymentFrame, "Payment failed.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
@@ -851,7 +876,6 @@ public class ImageJFrame {
         paymentFrame.setVisible(true);
     }
     
-
 
 
     public static void main(String[] args) {

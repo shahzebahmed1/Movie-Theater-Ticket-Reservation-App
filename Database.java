@@ -56,23 +56,23 @@ public class Database {
     }
     
 
-    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException{
-        try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
-            String query = "INSERT INTO paymentInfo (cardNumber, cvv, expireDate, cardHolder) VALUES (?, ?, ?, ?)";
+    public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "INSERT INTO paymentInfo (cardNumber, cvv, expireDate, cardHolder, username) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, cardNumber);
             preparedStatement.setString(2, cvv);
             preparedStatement.setDate(3, java.sql.Date.valueOf(expiryDate));
             preparedStatement.setString(4, cardHolderName);
+            preparedStatement.setNull(5, java.sql.Types.VARCHAR); // Set username as null
             int rowsChanged = preparedStatement.executeUpdate();
-            if(rowsChanged>0){
+            if (rowsChanged > 0) {
                 System.out.println("Payment information added successfully.");
             } else {
                 System.out.println("Failed to add payment information.");
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.print("something went wrong " + e);
-
         }
     }
 
@@ -615,6 +615,27 @@ public class Database {
             System.out.println("Error: " + e.getMessage());
             return false;
         }
+    }
+
+    public PaymentInfo getPaymentInfoForUser(String username) {
+        PaymentInfo paymentInfo = null;
+        String query = "SELECT cardNumber, cvv, expireDate, cardHolder FROM paymentInfo WHERE username = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String cardNumber = rs.getString("cardNumber");
+                    String cvv = rs.getString("cvv");
+                    String expireDate = rs.getString("expireDate");
+                    String cardHolder = rs.getString("cardHolder");
+                    paymentInfo = new PaymentInfo(cardNumber, cvv, expireDate, cardHolder);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving payment info: " + e);
+        }
+        return paymentInfo;
     }
     
     
