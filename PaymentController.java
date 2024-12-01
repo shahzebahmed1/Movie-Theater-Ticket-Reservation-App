@@ -5,15 +5,15 @@ public class PaymentController {
         this.financialInstitution = financialInstitution;
     }
 
-    public boolean processPayment(String cardNumber, String cvv, String expiryDate, String cardHolderName, double amount) {
-        boolean isValid = financialInstitution.validateCard(cardNumber, cvv, expiryDate, cardHolderName);
+    public boolean processPayment(PaymentInfo paymentInfo, double amount) {
+        boolean isValid = financialInstitution.validateCard(paymentInfo);
     
         if (!isValid) {
-            System.out.println("Card validation failed. Payment rejected.");
+            System.out.println("Payment failed");
             return false;
         }
 
-        System.out.println("Processing payment of $" + amount + " for card: " + cardNumber);
+        System.out.println("Payment successful");
         return true; 
     }
 

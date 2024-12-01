@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.sql.Date;
+
 
 public class Database {
 
@@ -74,18 +76,18 @@ public class Database {
         }
     }
 
-    public boolean validateCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException {
+    public boolean validateCard(PaymentInfo paymentInfo) throws SQLException {
         try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
             String query = "SELECT COUNT(*) FROM paymentInfo WHERE cardNumber = ? AND cvv = ? AND expireDate = ? AND cardHolder = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, cardNumber);
-            preparedStatement.setString(2, cvv);
-            preparedStatement.setDate(3, java.sql.Date.valueOf(expiryDate));
-            preparedStatement.setString(4, cardHolderName);
+            preparedStatement.setString(1, paymentInfo.getCardNumber());
+            preparedStatement.setString(2, paymentInfo.getCvv());
+            preparedStatement.setDate(3, java.sql.Date.valueOf(paymentInfo.getExpiryDate()));
+            preparedStatement.setString(4, paymentInfo.getCardHolderName());
 
-            ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSet result = preparedStatement.executeQuery();
 
-            if (resultSet.next() && resultSet.getInt(1) > 0) {
+            if (result.next() && result.getInt(1) > 0) {
                 System.out.println("valid card information");
                 return true;
             }
@@ -299,7 +301,7 @@ public class Database {
                 ps.setInt(1, availability);
                 ps.setInt(2, seatId);
                 int rowsUpdated = ps.executeUpdate();
-                
+                System.out.println("Updated seat availability");
                 return rowsUpdated > 0;
             } catch (SQLException e) {
                 System.out.println("Error updating seat" + e);
@@ -310,6 +312,85 @@ public class Database {
             return false;
         }
     }
+
+    public Seat getSeatForTicket(int ticketID) {        
+        Seat seat = null;
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT seatID FROM tickets WHERE ticketID = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, ticketID);
+    
+            ResultSet resultSet = preparedStatement.executeQuery();
+            
+            if (resultSet.next()) {
+                int seatID = resultSet.getInt("seatID");
+                seat = getSeatDetails(seatID);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting ticket seat " + e);
+        }
+        System.out.println("Successfully retrieved ticket seat");
+        return seat;
+    }
+
+    public Seat getSeatDetails(int seatID) {
+        Seat seat = null;
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            
+            String query = "SELECT * FROM seats WHERE seatID = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, seatID);
+    
+            ResultSet result = preparedStatement.executeQuery();
+            
+            if (result.next()) {
+                int seatId = result.getInt("seatID");
+                int row = result.getInt("seat_row");
+                char col = result.getString("seat_column").charAt(0);
+                String availability = (result.getInt("availability") == 1) ? "available" : "booked"; 
+                seat = new Seat(seatId, row, col, availability);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting seat details" + e);
+        }
+        
+        return seat;
+    }
+    
+    public void insertTicket(Ticket ticket, String username, String cardNumber, java.util.Date dateBought) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "INSERT INTO tickets (movieID, showtimeID, seatID, username, cardNumber, dateBought) VALUES (?, ?, ?, ?, ?, ?)";
+            
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            
+            int movieID = ticket.getMovie().getMovieId();
+            int showtimeID = 1; 
+            int seatID = ticket.getSeat().getSeatId(); 
+            preparedStatement.setInt(1, movieID);
+            preparedStatement.setInt(2, showtimeID);
+            preparedStatement.setInt(3, seatID);
+
+            if (username != null && !username.isEmpty()) {
+                preparedStatement.setString(4, username);  
+            } else {
+                preparedStatement.setNull(4, java.sql.Types.VARCHAR);  
+            }
+            preparedStatement.setString(5, cardNumber);  
+            preparedStatement.setDate(6, new java.sql.Date(dateBought.getTime()));  
+
+            int rowsChanged = preparedStatement.executeUpdate();
+            if (rowsChanged > 0) {
+                System.out.println("Ticket added to the database");
+            } else {
+                System.out.println("Failed to add ticket");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+    
+    
+    
     
     
 }

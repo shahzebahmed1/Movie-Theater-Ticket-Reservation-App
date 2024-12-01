@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Date;
+
 
 public class ImageJFrame {
     private String userType = "guest"; // Default user type is "guest"
@@ -366,7 +368,13 @@ public class ImageJFrame {
                     if (cardMatches) {
                         int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice Lookup", JOptionPane.YES_NO_OPTION);
                         if (option == JOptionPane.YES_OPTION) {
+                            Seat seat = database.getSeatForTicket(ticketID); 
+                        
+                            seat.setAvailability("available");
+                            movieController.updateSeatAvailability(seat);
                             database.cancelTicket(ticketID);
+
+                            
                             JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
                             invoiceFrame.dispose();
                         }
@@ -601,7 +609,6 @@ public class ImageJFrame {
         JTextField cvvField = new JTextField(4);
         JButton confirmButton = new JButton("Confirm Payment");
     
-        // Layout components
         paymentPanel.add(movieLabel, constraints);
         constraints.gridy = 1;
         paymentPanel.add(seatLabel, constraints);
@@ -640,12 +647,18 @@ public class ImageJFrame {
                     FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
                     PaymentController paymentController = new PaymentController(financialInstitution);
                     double amount = 15.0; 
-                    boolean paymentSuccess = paymentController.processPayment(cardNumber, cvv, expiryDate, name, amount);
+                    PaymentInfo paymentInfo = new PaymentInfo(cardNumber, cvv, expiryDate, name);
+                    boolean paymentSuccess = paymentController.processPayment(paymentInfo, amount);
     
                     if (paymentSuccess) {
                         seat.setAvailability("booked");
-    
                         movieController.updateSeatAvailability(seat);
+                        Ticket ticket = new Ticket(selectedMovie, new Showtime("12:00"), seat);  // Assuming selectedShowtime exists
+                        try {
+                            database.insertTicket(ticket, null, paymentInfo.getCardNumber(), new Date());
+                        } catch (SQLException er) {
+                            System.out.println("Error " + er);
+                        }
     
                         JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked.", "Success", JOptionPane.INFORMATION_MESSAGE);
                         paymentFrame.dispose();  
