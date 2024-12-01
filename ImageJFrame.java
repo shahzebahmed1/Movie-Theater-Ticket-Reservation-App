@@ -247,9 +247,25 @@ public class ImageJFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Username
+        // Alert Message
+        LocalDate oneYearFromToday = LocalDate.now().plusYears(1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+        String formattedDate = oneYearFromToday.format(formatter);
+
+        JLabel alertLabel = new JLabel("<html><span style='color:red; font-weight:bold;'>Note: $20 Annual Fee Charge. Your registration will be valid till " + formattedDate + ".</span></html>");
+        alertLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        alertLabel.setPreferredSize(new Dimension(400, 30));
+
+        // Add the alert message to the panel
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 4;
+        registerPanel.add(alertLabel, gbc);
+
+        // Username
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
         registerPanel.add(new JLabel("Username:"), gbc);
         gbc.gridx = 1;
         JTextField usernameField = new JTextField(15);
@@ -264,7 +280,7 @@ public class ImageJFrame {
 
         // Name
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         registerPanel.add(new JLabel("Name:"), gbc);
         gbc.gridx = 1;
         JTextField nameField = new JTextField(15);
@@ -277,43 +293,49 @@ public class ImageJFrame {
         JTextField addressField = new JTextField(15);
         registerPanel.add(addressField, gbc);
 
-        // Initial Balance
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        registerPanel.add(new JLabel("Initial Balance:"), gbc);
-        gbc.gridx = 1;
-        JTextField balanceField = new JTextField(15);
-        registerPanel.add(balanceField, gbc);
-
         // Card Number
-        gbc.gridx = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         registerPanel.add(new JLabel("Card Number:"), gbc);
-        gbc.gridx = 3;
+        gbc.gridx = 1;
         JTextField cardNumberField = new JTextField(15);
         registerPanel.add(cardNumberField, gbc);
 
-        // Expiry Date
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        registerPanel.add(new JLabel("Expiry Date (YYYY-MM-DD):"), gbc);
-        gbc.gridx = 1;
+        // Expiry Date (MM-YY format)
+        gbc.gridx = 2;
+        registerPanel.add(new JLabel("Expiry Date (MM-YY):"), gbc);
+        gbc.gridx = 3;
         JTextField expiryDateField = new JTextField(15);
         registerPanel.add(expiryDateField, gbc);
 
         // CVV
-        gbc.gridx = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         registerPanel.add(new JLabel("CVV:"), gbc);
-        gbc.gridx = 3;
+        gbc.gridx = 1;
         JTextField cvvField = new JTextField(15);
         registerPanel.add(cvvField, gbc);
 
-        // Register Button
+        // Checkbox for confirming annual fee
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
+        gbc.gridwidth = 4;
+        JCheckBox confirmFeeCheckbox = new JCheckBox("I confirm the $20 annual fee charge.");
+        registerPanel.add(confirmFeeCheckbox, gbc);
+
+        // Register Button (initially disabled)
+        gbc.gridx = 0;
+        gbc.gridy = 6;
         gbc.gridwidth = 4;
         gbc.anchor = GridBagConstraints.CENTER;
         JButton registerButton = new JButton("Register");
+        registerButton.setEnabled(false); // Initially disabled
         registerPanel.add(registerButton, gbc);
+
+        // Enable register button only when the checkbox is selected
+        confirmFeeCheckbox.addActionListener(e -> {
+            registerButton.setEnabled(confirmFeeCheckbox.isSelected());
+        });
 
         // ActionListener for registration
         registerButton.addActionListener(e -> {
@@ -321,30 +343,19 @@ public class ImageJFrame {
             String password = new String(passwordField.getPassword());
             String name = nameField.getText();
             String address = addressField.getText();
-            String balanceText = balanceField.getText();
             String cardNumber = cardNumberField.getText();
             String expiryDate = expiryDateField.getText();
             String cvv = cvvField.getText();
 
             // Validate inputs
-            if (username.isEmpty() || password.isEmpty() || name.isEmpty() || address.isEmpty() || balanceText.isEmpty() ||
-                    cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
+            if (username.isEmpty() || password.isEmpty() || name.isEmpty() || address.isEmpty() || cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
                 JOptionPane.showMessageDialog(registerFrame, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
-            // check for a valid date
-            if (!validDate(expiryDate)) {
-            	JOptionPane.showMessageDialog(registerFrame, "Please enter a valid date", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            // Ensure balance is a valid number
-            double balance;
-            try {
-                balance = Double.parseDouble(balanceText);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(registerFrame, "Invalid balance amount.", "Error", JOptionPane.ERROR_MESSAGE);
+
+            // Check for a valid expiry date in MM-YY format
+            if (!validExpiryDate(expiryDate)) {
+                JOptionPane.showMessageDialog(registerFrame, "Please enter a valid expiry date in MM-YY format.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -356,30 +367,22 @@ public class ImageJFrame {
 
             // Simulate user registration
             User u = new User();
-            
-            u.register(database, username, password, name, address, balance, cardNumber, cvv, expiryDate);
-            
-            JOptionPane.showMessageDialog(registerFrame, "Registration successful! You can now log in.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            u.register(database, username, password, name, address, 20.0, cardNumber, cvv, expiryDate); // Deduct $20 annual fee
+
+            JOptionPane.showMessageDialog(registerFrame, "Registration successful! Your membership is valid till: " + formattedDate, "Success", JOptionPane.INFORMATION_MESSAGE);
             registerFrame.dispose();
         });
 
         // Add the panel to the frame
         registerFrame.add(registerPanel);
         registerFrame.pack();
-        registerFrame.setLocationRelativeTo(null); // Center the frame
+        registerFrame.setLocationRelativeTo(null);
         registerFrame.setVisible(true);
     }
 
-    // helper function to see if date is valid
-    public boolean validDate(String date) {
-    	
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // format the date should be
-        try {
-            LocalDate d = LocalDate.parse(date, formatter);
-            return true; // if we can parse the data, then it is a valid date
-        } catch (DateTimeParseException e) {
-            return false; // otherwise its invalid
-        }
+    // Helper method to validate MM-YY format
+    private boolean validExpiryDate(String expiryDate) {
+        return expiryDate.matches("^(0[1-9]|1[0-2])-(\\d{2})$");
     }
 
     // Show Invoice Lookup Frame
