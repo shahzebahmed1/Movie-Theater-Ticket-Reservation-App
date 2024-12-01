@@ -106,14 +106,14 @@ public class Database {
             if (availability){
                 query+= " WHERE availableToPublic = TRUE";
             }
-            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int movieID = rs.getInt("movieID");
-                    String title = rs.getString("title");
-                    int duration = rs.getInt("duration");
-                    String genre = rs.getString("genre");
-                    boolean availableToPublic = rs.getBoolean("availableToPublic");
-                    int preReleasedTickets = rs.getInt("preReleasedTicketsleft");
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query); ResultSet result = preparedStatement.executeQuery()) {
+                while (result.next()) {
+                    int movieID = result.getInt("movieID");
+                    String title = result.getString("title");
+                    int duration = result.getInt("duration");
+                    String genre = result.getString("genre");
+                    boolean availableToPublic = result.getBoolean("availableToPublic");
+                    int preReleasedTickets = result.getInt("preReleasedTicketsleft");
                     System.out.println("Movie ID: " + movieID + ", Title: " + title + ", Duration: " + duration + " mins, Genre: " + genre);
                     Movie movie = new Movie(movieID, title, genre, duration, availableToPublic, preReleasedTickets);
                     movies.add(movie);
@@ -128,14 +128,33 @@ public class Database {
 
     }
 
+    public void removeMovie(int movieID) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "DELETE FROM movies WHERE movieID = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, movieID);
+                int rowsDeleted = preparedStatement.executeUpdate();
+                if (rowsDeleted > 0) {
+                    System.out.println("Movie removed");
+                } else {
+                    System.out.println("No movie found" + movieID + ".");
+                }
+            } catch (Exception e) {
+                System.out.println("Error deleting movie" + e);
+            }
+        } catch (Exception e) {
+            System.out.println("error" + e);
+        }
+    }
+    
 
     public void updateMovieInDatabase(Movie movie) throws SQLException{
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
             String query = "UPDATE movies SET preReleasedTicketsleft = ? WHERE movieID = ?";
-            try (PreparedStatement ps = connection.prepareStatement(query)) {
-                ps.setInt(1, movie.getPreReleasedTickets());
-                ps.setInt(2, movie.getMovieId());
-                int rowsUpdated = ps.executeUpdate();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, movie.getPreReleasedTickets());
+                preparedStatement.setInt(2, movie.getMovieId());
+                int rowsUpdated = preparedStatement.executeUpdate();
                 if (rowsUpdated > 0) {
                     System.out.println("Update pre-release ticket number for movie");
                 } else {
