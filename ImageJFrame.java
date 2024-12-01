@@ -4,6 +4,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class ImageJFrame {
     private String userType = "guest"; // Default user type is "guest"
@@ -98,7 +101,7 @@ public class ImageJFrame {
         layeredPane.add(buttonPanel, Integer.valueOf(1)); // Add buttons at the foreground layer
 
         // Initialize database and movie controller
-        database = new Database("root", "password"); // use your credentials!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        database = new Database("root", "password"); // use your credentials!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         movieController = new MovieController(database);
 
         // ActionListener for buttons
@@ -249,7 +252,7 @@ public class ImageJFrame {
         // Expiry Date
         gbc.gridx = 0;
         gbc.gridy = 3;
-        registerPanel.add(new JLabel("Expiry Date (MM/YY):"), gbc);
+        registerPanel.add(new JLabel("Expiry Date (YYYY-DD-MM):"), gbc);
         gbc.gridx = 1;
         JTextField expiryDateField = new JTextField(15);
         registerPanel.add(expiryDateField, gbc);
@@ -286,7 +289,13 @@ public class ImageJFrame {
                 JOptionPane.showMessageDialog(registerFrame, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+            
+            // check for a valid date
+            if (!validDate(expiryDate)) {
+            	JOptionPane.showMessageDialog(registerFrame, "Please enter a valid date", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
             // Ensure balance is a valid number
             double balance;
             try {
@@ -303,7 +312,10 @@ public class ImageJFrame {
             }
 
             // Simulate user registration
-            users.add(username); // Add the username to the user list
+            User u = new User();
+            
+            u.register(database, username, password, name, address, balance, cardNumber, cvv, expiryDate);
+            
             JOptionPane.showMessageDialog(registerFrame, "Registration successful! You can now log in.", "Success", JOptionPane.INFORMATION_MESSAGE);
             registerFrame.dispose();
         });
@@ -314,7 +326,19 @@ public class ImageJFrame {
         registerFrame.setLocationRelativeTo(null); // Center the frame
         registerFrame.setVisible(true);
     }
-
+    
+    
+    // helper function to see if date is valid
+    public boolean validDate(String date) {
+    	
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // format the date should be
+        try {
+            LocalDate d = LocalDate.parse(date, formatter);
+            return true; // if we can parse the data, then it is a valid date
+        } catch (DateTimeParseException e) {
+            return false; // otherwise its invalid
+        }
+    }
 
 
 
