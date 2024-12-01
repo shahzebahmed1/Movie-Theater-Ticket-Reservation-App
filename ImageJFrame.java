@@ -102,7 +102,7 @@ public class ImageJFrame {
 
         // ActionListener for buttons
         bookTicketButton.addActionListener(e -> showMovieSelectionPage());
-        createAccountButton.addActionListener(e -> showRegistrationMessage());
+        createAccountButton.addActionListener(e -> showRegistrationForm());
         loginButton.addActionListener(e -> showLoginFrame(loginButton, createAccountButton));
         logoutButton.addActionListener(e -> logout());
         invoiceLookupButton.addActionListener(e -> showInvoiceLookupFrame());
@@ -118,10 +118,7 @@ public class ImageJFrame {
         mainFrame.setVisible(true);
     }
 
-    // Show registration message (not implemented yet)
-    private void showRegistrationMessage() {
-        JOptionPane.showMessageDialog(mainFrame, "Registration screen not implemented yet.", "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
+
 
     // User login logic
     private void showLoginFrame(JButton loginButton, JButton createAccountButton) {
@@ -144,7 +141,7 @@ public class ImageJFrame {
         loginSubmitButton.addActionListener(e -> {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
-            
+
             User u = new User();
 
             if (username.equals("admin") && password.equals("admin123")) {
@@ -157,22 +154,22 @@ public class ImageJFrame {
                 createAccountButton.setVisible(false);
                 loginFrame.dispose();
             } else
-				try {
-					if (u.login(database, username, password)) {
-					    JOptionPane.showMessageDialog(loginFrame, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-					    userType = "user";
-					    logoutButton.setVisible(true);
-					    orderHistoryButton.setVisible(true);
-					    loginButton.setVisible(false);
-					    createAccountButton.setVisible(false);
-					    loginFrame.dispose();
-					} else {
-					    JOptionPane.showMessageDialog(loginFrame, "Invalid credentials.", "Error", JOptionPane.ERROR_MESSAGE);
-					}
-				} catch (HeadlessException | SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+                try {
+                    if (u.login(database, username, password)) {
+                        JOptionPane.showMessageDialog(loginFrame, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        userType = "user";
+                        logoutButton.setVisible(true);
+                        orderHistoryButton.setVisible(true);
+                        loginButton.setVisible(false);
+                        createAccountButton.setVisible(false);
+                        loginFrame.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(loginFrame, "Invalid credentials.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (HeadlessException | SQLException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
         });
 
         loginFrame.add(loginPanel);
@@ -190,9 +187,134 @@ public class ImageJFrame {
         adminControlsButton.setVisible(false);
         loginButton.setVisible(true);
         createAccountButton.setVisible(true);
-    
+
         mainFrame.repaint();
     }
+
+    private void showRegistrationForm() {
+        JFrame registerFrame = new JFrame("Register");
+        JPanel registerPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        // Set default spacing for components
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Username
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        registerPanel.add(new JLabel("Username:"), gbc);
+        gbc.gridx = 1;
+        JTextField usernameField = new JTextField(15);
+        registerPanel.add(usernameField, gbc);
+
+        // Password
+        gbc.gridx = 2;
+        registerPanel.add(new JLabel("Password:"), gbc);
+        gbc.gridx = 3;
+        JPasswordField passwordField = new JPasswordField(15);
+        registerPanel.add(passwordField, gbc);
+
+        // Name
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        registerPanel.add(new JLabel("Name:"), gbc);
+        gbc.gridx = 1;
+        JTextField nameField = new JTextField(15);
+        registerPanel.add(nameField, gbc);
+
+        // Address
+        gbc.gridx = 2;
+        registerPanel.add(new JLabel("Address:"), gbc);
+        gbc.gridx = 3;
+        JTextField addressField = new JTextField(15);
+        registerPanel.add(addressField, gbc);
+
+        // Initial Balance
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        registerPanel.add(new JLabel("Initial Balance:"), gbc);
+        gbc.gridx = 1;
+        JTextField balanceField = new JTextField(15);
+        registerPanel.add(balanceField, gbc);
+
+        // Card Number
+        gbc.gridx = 2;
+        registerPanel.add(new JLabel("Card Number:"), gbc);
+        gbc.gridx = 3;
+        JTextField cardNumberField = new JTextField(15);
+        registerPanel.add(cardNumberField, gbc);
+
+        // Expiry Date
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        registerPanel.add(new JLabel("Expiry Date (MM/YY):"), gbc);
+        gbc.gridx = 1;
+        JTextField expiryDateField = new JTextField(15);
+        registerPanel.add(expiryDateField, gbc);
+
+        // CVV
+        gbc.gridx = 2;
+        registerPanel.add(new JLabel("CVV:"), gbc);
+        gbc.gridx = 3;
+        JTextField cvvField = new JTextField(15);
+        registerPanel.add(cvvField, gbc);
+
+        // Register Button
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 4;
+        gbc.anchor = GridBagConstraints.CENTER;
+        JButton registerButton = new JButton("Register");
+        registerPanel.add(registerButton, gbc);
+
+        // ActionListener for registration
+        registerButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            String name = nameField.getText();
+            String address = addressField.getText();
+            String balanceText = balanceField.getText();
+            String cardNumber = cardNumberField.getText();
+            String expiryDate = expiryDateField.getText();
+            String cvv = cvvField.getText();
+
+            // Validate inputs
+            if (username.isEmpty() || password.isEmpty() || name.isEmpty() || address.isEmpty() || balanceText.isEmpty() ||
+                    cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
+                JOptionPane.showMessageDialog(registerFrame, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Ensure balance is a valid number
+            double balance;
+            try {
+                balance = Double.parseDouble(balanceText);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(registerFrame, "Invalid balance amount.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Basic validation for card number and CVV
+            if (cardNumber.length() != 16 || cvv.length() != 3) {
+                JOptionPane.showMessageDialog(registerFrame, "Invalid card details.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Simulate user registration
+            users.add(username); // Add the username to the user list
+            JOptionPane.showMessageDialog(registerFrame, "Registration successful! You can now log in.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            registerFrame.dispose();
+        });
+
+        // Add the panel to the frame
+        registerFrame.add(registerPanel);
+        registerFrame.pack();
+        registerFrame.setLocationRelativeTo(null); // Center the frame
+        registerFrame.setVisible(true);
+    }
+
+
 
 
     // Show Invoice Lookup Frame
@@ -407,7 +529,7 @@ public class ImageJFrame {
     // Payment Page
     private void showPaymentPage(Movie selectedMovie, String selectedSeat, int movieId) {
         JFrame paymentFrame = new JFrame("Payment");
-    
+
         JPanel paymentPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -424,63 +546,64 @@ public class ImageJFrame {
         JLabel cvvLabel = new JLabel("CVV:");
         JTextField cvvField = new JTextField(4);
         JButton confirmButton = new JButton("Confirm Payment");
-    
+
         gbc.gridx = 0;
         gbc.gridy = 0;
         paymentPanel.add(movieLabel, gbc);
-    
+
         gbc.gridy = 1;
         paymentPanel.add(seatLabel, gbc);
-    
+
         gbc.gridy = 2;
         paymentPanel.add(cardholderLabel, gbc);
         gbc.gridx = 1;
         cardholderField.setPreferredSize(new Dimension(300, 30));
         paymentPanel.add(cardholderField, gbc);
         gbc.gridx = 0;
-    
+
         gbc.gridy = 3;
         paymentPanel.add(cardNumberLabel, gbc);
         gbc.gridx = 1;
         cardNumberField.setPreferredSize(new Dimension(300, 30));
         paymentPanel.add(cardNumberField, gbc);
         gbc.gridx = 0;
-    
+
         gbc.gridy = 4;
         paymentPanel.add(expiryDateLabel, gbc);
         gbc.gridx = 1;
         expiryDateField.setPreferredSize(new Dimension(300, 30));
         paymentPanel.add(expiryDateField, gbc);
         gbc.gridx = 0;
-    
+
         gbc.gridy = 5;
         paymentPanel.add(cvvLabel, gbc);
         gbc.gridx = 1;
         cvvField.setPreferredSize(new Dimension(300, 30));
         paymentPanel.add(cvvField, gbc);
         gbc.gridx = 0;
-    
+
         gbc.gridy = 6;
         gbc.gridwidth = 2;
         paymentPanel.add(confirmButton, gbc);
-    
+
         confirmButton.addActionListener(e -> {
             String cardholderName = cardholderField.getText();
             String cardNumber = cardNumberField.getText();
             String expiryDate = expiryDateField.getText();
             String cvv = cvvField.getText();
-    
+
             if (cardholderName.isEmpty() || cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
                 JOptionPane.showMessageDialog(paymentFrame, "Please fill in payment details.", "Error", JOptionPane.ERROR_MESSAGE);
             } else if (cardNumber.length() != 16 || cvv.length() != 3 || !expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
                 JOptionPane.showMessageDialog(paymentFrame, "Invalid card details or invalid date format", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 FinancialInstitution financialInstitution = new FinancialInstitution(database);
+                FinancialInstitution financialInstitution = new FinancialInstitution(database);
                 PaymentController paymentController = new PaymentController(financialInstitution);
-    
-                double amount = 15.00; 
+
+                double amount = 15.00;
                 boolean paymentSuccess = paymentController.processPayment(cardNumber, cvv, expiryDate, cardholderName, amount);
-    
+
                 if (paymentSuccess) {
                     boolean bookingSuccess = movieController.bookTicketForMovie(movieId, userType.equals("guest"));
                     if (bookingSuccess) {
@@ -494,17 +617,18 @@ public class ImageJFrame {
                 }
             }
         });
-    
+
         paymentFrame.add(paymentPanel);
         paymentFrame.setSize(500, 400); 
         paymentFrame.setLocationRelativeTo(null);
         paymentFrame.setVisible(true);
     }
-    
-    
+
+
 
     public static void main(String[] args) {
         new ImageJFrame();
     }
 }
+
 
