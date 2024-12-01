@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import java.time.LocalTime;
 
 
 public class ImageJFrame {
@@ -461,12 +462,57 @@ public class ImageJFrame {
 
     // Add Movie
     private void addMovie() {
-        String newMovie = JOptionPane.showInputDialog(mainFrame, "Enter Movie Name and Showtime:");
-        if (newMovie != null && !newMovie.trim().isEmpty()) {
-            movies.add(newMovie);
-            JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(mainFrame, "Invalid movie details.", "Error", JOptionPane.ERROR_MESSAGE);
+        // Create a JPanel to hold the input fields
+        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+
+        // Create labels and text fields
+        JLabel titleLabel = new JLabel("Movie Title:");
+        JTextField titleField = new JTextField();
+
+        JLabel showtimeLabel = new JLabel("Showtime (HH:mm):");
+        JTextField showtimeField = new JTextField(); // Use JTextField for manual validation
+
+        // Add components to the panel
+        panel.add(titleLabel);
+        panel.add(titleField);
+        panel.add(showtimeLabel);
+        panel.add(showtimeField);
+
+        // Show input dialog with the panel
+        int result = JOptionPane.showConfirmDialog(
+                mainFrame,
+                panel,
+                "Enter Movie Details",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            String title = titleField.getText().trim();
+            String showtime = showtimeField.getText().trim();
+
+            if (!title.isEmpty() && isValidTime(showtime)) {
+                String newMovie = title + " - " + showtime;
+                movies.add(newMovie);
+                JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(mainFrame,
+                        "Invalid input. Ensure title is filled and showtime is in HH:mm format.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
+
+    private boolean isValidTime(String time) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        try {
+            // Attempt to parse the input as a LocalTime
+            LocalTime.parse(time, timeFormatter);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false; // Invalid time format
         }
     }
 
