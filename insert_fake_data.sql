@@ -9,7 +9,8 @@ USE AcmePlex;
 --(3, 'Interstellar', 169, 'Sci-Fi', TRUE, 2),
 --(4, 'Shrek', 120, 'Comedy', TRUE, 2),
 --(5, 'Shutter Island', 120, 'Thriller', FALSE, 2);
-
+--If you want to add movies just add it through the admin tool, it will create the seats for it and the showtime. If you want to create diffent
+--showtimes for a movie, just create another movie with the same title, genre,etc but with diff showtime
 
 
 -- users
