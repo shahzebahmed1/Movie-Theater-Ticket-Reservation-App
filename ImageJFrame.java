@@ -18,6 +18,7 @@ public class ImageJFrame {
     private JButton searchButton;
     private JButton loginButton;
     private JButton createAccountButton;
+    private User currentUser; // Add a field to store the current user
 
     private ArrayList<String> movies = new ArrayList<>(); // Placeholder for movies
     private ArrayList<String> users = new ArrayList<>(); // Placeholder for users
@@ -110,6 +111,11 @@ public class ImageJFrame {
         logoutButton.addActionListener(e -> logout());
         invoiceLookupButton.addActionListener(e -> showInvoiceLookupFrame());
         adminControlsButton.addActionListener(e -> showAdminControls());
+        orderHistoryButton.addActionListener(e -> {
+            if (userType.equals("user")) {
+                showOrderHistory(currentUser); // Ensure currentUser is passed correctly
+            }
+        });
 
         // Add the layered pane to the frame
         mainFrame.add(layeredPane, BorderLayout.CENTER);
@@ -121,7 +127,37 @@ public class ImageJFrame {
         mainFrame.setVisible(true);
     }
 
+    private void showOrderHistory(User user) {
+        JFrame orderHistoryFrame = new JFrame("Order History");
+        JPanel orderHistoryPanel = new JPanel(new BorderLayout());
 
+        JTextArea orderHistoryTextArea = new JTextArea();
+        orderHistoryTextArea.setEditable(false);
+
+        try {
+            ArrayList<Ticket> tickets = database.getUserTickets(user.getUsername());
+            if (tickets.isEmpty()) {
+                orderHistoryTextArea.setText("No tickets found.");
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (Ticket ticket : tickets) {
+                    sb.append(ticket.toString()).append("\n");
+                }
+                orderHistoryTextArea.setText(sb.toString());
+            }
+        } catch (SQLException e) {
+            orderHistoryTextArea.setText("Error retrieving order history.");
+        }
+
+        orderHistoryPanel.add(new JScrollPane(orderHistoryTextArea), BorderLayout.CENTER);
+        orderHistoryFrame.add(orderHistoryPanel);
+        orderHistoryFrame.setSize(400, 300);
+        orderHistoryFrame.setVisible(true);
+    }
+
+    private User getCurrentUser() {
+        return currentUser;
+    }
 
     // User login logic
     private void showLoginFrame(JButton loginButton, JButton createAccountButton) {
@@ -161,6 +197,8 @@ public class ImageJFrame {
                     if (u.login(database, username, password)) {
                         JOptionPane.showMessageDialog(loginFrame, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                         userType = "user";
+                        currentUser = u; 
+                        currentUser.setUsername(username); // Ensure the username is set for the current user
                         logoutButton.setVisible(true);
                         orderHistoryButton.setVisible(true);
                         loginButton.setVisible(false);
@@ -184,6 +222,7 @@ public class ImageJFrame {
     private void logout() {
         userType = "guest";
         isAdmin = false;
+        currentUser = null; // Clear the current user
         JOptionPane.showMessageDialog(mainFrame, "You have been logged out.", "Logout", JOptionPane.INFORMATION_MESSAGE);
         logoutButton.setVisible(false);
         orderHistoryButton.setVisible(false);

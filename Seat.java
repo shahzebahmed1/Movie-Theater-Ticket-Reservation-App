@@ -1,19 +1,27 @@
 public class Seat {
-    private String availability; //either Available or Booked
+    private int seatID;
+    private boolean availability;
     private int row;
-    private int column;
+    private String column;
+    private int movieID;
 
-    public Seat(int row, int column) {
-        this.availability = "Available";
+    public Seat(int seatID, boolean availability, int row, String column, int movieID) {
+        this.seatID = seatID;
+        this.availability = availability;
         this.row = row;
         this.column = column;
+        this.movieID = movieID;
     }
 
-    public String getAvailability() {
+    public int getSeatID() {
+        return seatID;
+    }
+
+    public boolean getAvailability() {
         return availability;
     }
 
-    public void setAvailability(String availability) {
+    public void setAvailability(boolean availability) {
         this.availability = availability;
     }
 
@@ -21,12 +29,16 @@ public class Seat {
         return row;
     }
 
-    public int getColumn() {
+    public String getColumn() {
         return column;
+    }
+
+    public int getMovieID() {
+        return movieID;
     }
 
     @Override
     public String toString() {
-        return "Seat [Row: " + row + ", Column: " + column + ", Availability: " + availability + "]";
+        return "Seat [ID: " + seatID + ", Availability: " + availability + ", Row: " + row + ", Column: " + column + ", Movie ID: " + movieID + "]";
     }
 }

@@ -9,7 +9,7 @@ public class TicketController {
     }
 
     public Ticket bookTicket(User user, Movie movie, Showtime showtime, Seat seat) {
-        if (!seat.getAvailability().equals("Available")) {
+        if (!seat.getAvailability()) { // Check if the seat is available
             System.out.println("The seat is already booked.");
             return null;
         }

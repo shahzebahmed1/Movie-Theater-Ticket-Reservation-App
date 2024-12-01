@@ -262,4 +262,81 @@ public class Database {
         }
         return false;
     }
+
+    public ArrayList<Ticket> getUserTickets(String username) throws SQLException {
+        ArrayList<Ticket> tickets = new ArrayList<>();
+        String query = "SELECT * FROM tickets WHERE username = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+            PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int movieID = rs.getInt("movieID");
+                    int showtimeID = rs.getInt("showtimeID");
+                    int seatID = rs.getInt("seatID");
+                    // Retrieve movie, showtime, and seat details from their respective tables
+                    Movie movie = getMovieById(movieID);
+                    Showtime showtime = getShowtimeById(showtimeID);
+                    Seat seat = getSeatById(seatID);
+                    if (movie != null && showtime != null && seat != null) {
+                        tickets.add(new Ticket(movie, showtime, seat));
+                    }
+                }
+            }
+        }
+        return tickets;
+    }
+
+    private Movie getMovieById(int movieID) throws SQLException {
+        String query = "SELECT * FROM movies WHERE movieID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, movieID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String title = rs.getString("title");
+                    int duration = rs.getInt("duration");
+                    String genre = rs.getString("genre");
+                    boolean availableToPublic = rs.getBoolean("availableToPublic");
+                    int preReleasedTickets = rs.getInt("preReleasedTicketsleft");
+                    return new Movie(movieID, title, genre, duration, availableToPublic, preReleasedTickets);
+                }
+            }
+        }
+        return null;
+    }
+
+    private Showtime getShowtimeById(int showtimeID) throws SQLException {
+        String query = "SELECT * FROM showtimes WHERE showtimeID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, showtimeID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int movieID = rs.getInt("movieID");
+                    String time = rs.getString("time");
+                    return new Showtime(showtimeID, movieID, time);
+                }
+            }
+        }
+        return null;
+    }
+
+    private Seat getSeatById(int seatID) throws SQLException {
+        String query = "SELECT * FROM seats WHERE seatID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+            PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, seatID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    boolean availability = rs.getBoolean("availability");
+                    int row = rs.getInt("seat_row");
+                    String column = rs.getString("seat_column");
+                    int movieID = rs.getInt("movieID");
+                    return new Seat(seatID, availability, row, column, movieID);
+                }
+            }
+        }
+        return null;
+    }
 }
