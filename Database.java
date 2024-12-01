@@ -7,9 +7,9 @@ import java.util.ArrayList;
 
 public class Database {
 
-    private final String USER;
-    private final String PASSWORD;
-    private static final String DATABASE = "jdbc:mysql://localhost:3306/acmeplex";
+    final String USER;
+    final String PASSWORD;
+    static final String DATABASE = "jdbc:mysql://localhost:3306/acmeplex";
 
     public Database(String user, String password) {
         this.USER = user;
@@ -52,6 +52,7 @@ public class Database {
     	}
     	
     }
+    
 
     public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException{
         try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
