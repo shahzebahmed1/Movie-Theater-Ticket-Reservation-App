@@ -486,8 +486,36 @@ public class Database {
         }
     }
     
-    
-    
+    public ArrayList<String> getAllUsernames() throws SQLException {
+        ArrayList<String> usernames = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "SELECT username FROM users";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet result = preparedStatement.executeQuery()) {
+                while (result.next()) {
+                    usernames.add(result.getString("username"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e);
+        }
+        return usernames;
+    }
+
+    public boolean deleteUserFromDatabase(String username) {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "DELETE FROM users WHERE username = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, username);
+                int rowsDeleted = preparedStatement.executeUpdate();
+                System.out.println("Deleted user");
+                return rowsDeleted > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
     
     
 }
