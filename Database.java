@@ -756,4 +756,20 @@ public class Database {
             ps.executeUpdate();
         }
     }
+
+    public void setAnnualFeePaid(String username, boolean isPaid) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "UPDATE users SET isAnnualFeePaid = ? WHERE username = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setBoolean(1, isPaid);
+                ps.setString(2, username);
+                int rowsUpdated = ps.executeUpdate();
+                if (rowsUpdated > 0) {
+                    System.out.println("Annual fee status updated for user: " + username);
+                } else {
+                    System.out.println("Failed to update annual fee status for user: " + username);
+                }
+            }
+        }
+    }
 }
