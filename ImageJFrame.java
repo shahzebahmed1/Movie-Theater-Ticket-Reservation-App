@@ -12,6 +12,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.time.LocalTime;
 import java.util.Random;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 public class ImageJFrame {
