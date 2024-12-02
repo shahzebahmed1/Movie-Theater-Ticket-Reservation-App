@@ -645,5 +645,90 @@ public class Database {
         return paymentInfo;
     }
     
+    public void updateUserBalance(String username, double amount) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "UPDATE paymentinfo SET balance = balance - ? WHERE username = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setDouble(1, amount);
+                ps.setString(2, username);
+                int rowsUpdated = ps.executeUpdate();
+                if (rowsUpdated > 0) {
+                    System.out.println("Balance updated for user: " + username + " by amount: " + amount); // Debug statement
+                } else {
+                    System.out.println("Failed to update balance for user: " + username); // Debug statement
+                }
+            }
+        }
+    }
     
+    public double getTicketPrice(int movieId) throws SQLException {
+        String query = "SELECT ticketPrice FROM movies WHERE movieID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, movieId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("ticketPrice");
+                }
+            }
+        }
+        return 0.0;
+    }
+
+    public String getUsernameForCard(String cardNumber) throws SQLException {
+        String query = "SELECT username FROM paymentInfo WHERE cardNumber = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, cardNumber);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("username");
+                }
+            }
+        }
+        return null;
+    }
+
+    public Ticket getTicketById(int ticketID) throws SQLException {
+        String query = "SELECT * FROM tickets WHERE ticketID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, ticketID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int movieID = rs.getInt("movieID");
+                    int showtimeID = rs.getInt("showtimeID");
+                    int seatID = rs.getInt("seatID");
+                    System.out.println("Retrieved ticket details: movieID=" + movieID + ", showtimeID=" + showtimeID + ", seatID=" + seatID);
+                    
+                    Movie movie = getMovieById(movieID);
+                    if (movie == null) {
+                        System.out.println("Movie is null for movieID=" + movieID);
+                    }
+                    
+                    Showtime showtime = getShowtimeById(showtimeID);
+                    if (showtime == null) {
+                        System.out.println("Showtime is null for showtimeID=" + showtimeID);
+                    }
+                    
+                    Seat seat = getSeatById(seatID);
+                    if (seat == null) {
+                        System.out.println("Seat is null for seatID=" + seatID);
+                    }
+                    
+                    if (movie != null && showtime != null && seat != null) {
+                        System.out.println("Successfully retrieved ticket components.");
+                        return new Ticket(movie, showtime, seat);
+                    } else {
+                        System.out.println("One of the ticket components is null. Movie: " + movie + ", Showtime: " + showtime + ", Seat: " + seat);
+                    }
+                } else {
+                    System.out.println("No ticket found for ticketID=" + ticketID);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving ticket by ID: " + e);
+        }
+        return null;
+    }
 }

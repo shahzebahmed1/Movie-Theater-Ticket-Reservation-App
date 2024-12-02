@@ -8,6 +8,7 @@ public class Movie {
     private boolean availableToPublic;
     private int preReleasedTickets;
     private ArrayList<Showtime> showtimes;
+    private double ticketPrice;
 
     public Movie(int movieId, String title, String genre, int duration, boolean availableToPublic, int preReleasedTickets) {
         this.movieId = movieId;
@@ -74,6 +75,10 @@ public class Movie {
         if (preReleasedTickets > 0) {
             preReleasedTickets--;
         }
+    }
+
+    public double getTicketPrice() {
+        return ticketPrice;
     }
 
     @Override

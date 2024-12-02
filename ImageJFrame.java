@@ -428,34 +428,55 @@ public class ImageJFrame {
                     if (cardMatches) {
                         int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice Lookup", JOptionPane.YES_NO_OPTION);
                         if (option == JOptionPane.YES_OPTION) {
-                            Seat seat = database.getSeatForTicket(ticketID); 
-                        
-                            seat.setAvailability(true);
-                            movieController.updateSeatAvailability(seat);
-                            database.cancelTicket(ticketID);
-                            
-                            // create a ticket
-                            Ticket t = new Ticket();
-                            
-                            // if ticket does not have a cardnumber with a username associate with it create a giftcard
-                            if (!t.doesCardHaveUser(database, cardNumber)) {
-                            	
-                            	// create a random 5 digit number
-                            	Random rand = new Random();
-                            	int giftCardID = 10000 + rand.nextInt(90000);
-                            	
-                            	GiftCard g = new GiftCard();
-                            	g.createCard(database, giftCardID, 1); // shouldn't be 1, should be 85% of ticket price
-                            	
-                            	JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Gift Card created with 85% value with ID: " + giftCardID, "Success", JOptionPane.INFORMATION_MESSAGE);
-                                invoiceFrame.dispose();
-                            	
+                            Ticket t = database.getTicketById(ticketID); // Ensure the ticket is properly initialized
+                            if (t != null) {
+                                System.out.println("Ticket retrieved: " + t);
+                                if (t.getMovie() != null) {
+                                    int movieID = t.getMovie().getMovieId();
+                                    double ticketPrice = 0.0;
+                                    try {
+                                        ticketPrice = database.getTicketPrice(movieID);
+                                    } catch (SQLException ex) {
+                                        JOptionPane.showMessageDialog(invoiceFrame, "Error retrieving ticket price: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+                                    }
+                                    
+                                    Seat seat = database.getSeatForTicket(ticketID); 
+                                    seat.setAvailability(true);
+                                    movieController.updateSeatAvailability(seat);
+                                    database.cancelTicket(ticketID);
+                                    
+                                    if (!t.doesCardHaveUser(database, cardNumber)) {
+                                        // create a random 5 digit number
+                                        Random rand = new Random();
+                                        int giftCardID = 10000 + rand.nextInt(90000);
+                                        
+                                        GiftCard g = new GiftCard();
+                                        g.createCard(database, giftCardID, 1); // shouldn't be 1, should be 85% of ticket price
+                                        
+                                        JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Gift Card created with 85% value with ID: " + giftCardID, "Success", JOptionPane.INFORMATION_MESSAGE);
+                                        invoiceFrame.dispose();
+                                        
+                                    } else {
+                                        // Increase balance on the user's card
+                                        try {
+                                            String username = database.getUsernameForCard(cardNumber);
+                                            if (username != null) {
+                                                database.updateUserBalance(username, -ticketPrice); // Refund increases balance
+                                                JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                            }
+                                        } catch (SQLException ex) {
+                                            JOptionPane.showMessageDialog(invoiceFrame, "Error updating user balance: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        invoiceFrame.dispose();
+                                    }
+                                } else {
+                                    System.out.println("Movie is null in the ticket.");
+                                    JOptionPane.showMessageDialog(invoiceFrame, "Error retrieving ticket details.", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
                             } else {
-                            	JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Refund issued.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                                invoiceFrame.dispose();
+                                System.out.println("Ticket is null.");
+                                JOptionPane.showMessageDialog(invoiceFrame, "Error retrieving ticket details.", "Error", JOptionPane.ERROR_MESSAGE);
                             }
-                            
-                            
                         }
                     } else {
                         JOptionPane.showMessageDialog(invoiceFrame, "Card number does not match the one used for this ticket.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -857,12 +878,25 @@ public class ImageJFrame {
             if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
                 if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
                     boolean paymentSuccess = false;
+                    double ticketPrice = 0.0;
+                    try {
+                        ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
+                        System.out.println("Ticket Price: " + ticketPrice); // Debug statement
+                    } catch (SQLException ex) {
+                        System.out.println("Error retrieving ticket price: " + ex);
+                    }
                     if (currentUser != null) {
                         FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
                         PaymentController paymentController = new PaymentController(financialInstitution);
-                        double amount = 15.0;
                         PaymentInfo paymentInfo = new PaymentInfo(cardNumber, cvv, expiryDate, name);
-                        paymentSuccess = paymentController.processPayment(paymentInfo, amount);
+                        paymentSuccess = paymentController.processPayment(paymentInfo, ticketPrice);
+                        if (paymentSuccess) {
+                            try {
+                                database.updateUserBalance(currentUser.getUsername(), ticketPrice);
+                            } catch (SQLException ex) {
+                                System.out.println("Error updating user balance: " + ex);
+                            }
+                        }
                     } else {
                         try {
                             database.insertCard(cardNumber, cvv, expiryDate, name);
