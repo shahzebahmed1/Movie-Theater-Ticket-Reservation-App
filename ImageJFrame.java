@@ -451,7 +451,8 @@ public class ImageJFrame {
                                         int giftCardID = 10000 + rand.nextInt(90000);
                                         
                                         GiftCard g = new GiftCard();
-                                        g.createCard(database, giftCardID, 1); // shouldn't be 1, should be 85% of ticket price
+                                        double giftCardBalance = ticketPrice * 0.85; //we only refund 85% if unregistered user
+                                        g.createCard(database, giftCardID, giftCardBalance);
                                         
                                         JOptionPane.showMessageDialog(invoiceFrame, "Ticket canceled. Gift Card created with 85% value with ID: " + giftCardID, "Success", JOptionPane.INFORMATION_MESSAGE);
                                         invoiceFrame.dispose();
