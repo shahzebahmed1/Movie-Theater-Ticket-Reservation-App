@@ -25,6 +25,7 @@ public class ImageJFrame {
     private JButton loginButton;
     private JButton createAccountButton;
     private User currentUser; // Add a field to store the current user
+    private JButton bookTicketButton;
 
     private ArrayList<String> movies = new ArrayList<>(); // Placeholder for movies
     private ArrayList<String> users = new ArrayList<>(); // Placeholder for users
@@ -71,7 +72,7 @@ public class ImageJFrame {
         gbc.gridy = 0;
 
         // Create buttons
-        JButton bookTicketButton = new JButton("Book Ticket");
+        bookTicketButton = new JButton("Book Ticket");
         orderHistoryButton = new JButton("Order History");
         orderHistoryButton.setVisible(false); // Hidden by default
         invoiceLookupButton = new JButton("Invoice Lookup");
@@ -197,6 +198,7 @@ public class ImageJFrame {
                 adminControlsButton.setVisible(true);
                 loginButton.setVisible(false);
                 createAccountButton.setVisible(false);
+                bookTicketButton.setVisible(false);
                 loginFrame.dispose();
             } else
                 try {
@@ -209,6 +211,7 @@ public class ImageJFrame {
                         orderHistoryButton.setVisible(true);
                         loginButton.setVisible(false);
                         createAccountButton.setVisible(false);
+                        bookTicketButton.setVisible(true);
                         loginFrame.dispose();
                     } else {
                         JOptionPane.showMessageDialog(loginFrame, "Invalid credentials.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -235,6 +238,7 @@ public class ImageJFrame {
         adminControlsButton.setVisible(false);
         loginButton.setVisible(true);
         createAccountButton.setVisible(true);
+        bookTicketButton.setVisible(true);
 
         mainFrame.repaint();
     }
