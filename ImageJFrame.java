@@ -891,7 +891,16 @@ public class ImageJFrame {
         constraints.gridwidth = 2;
         paymentPanel.add(confirmButton, constraints);
 
-        // Set up the validate gift card button action listener
+        // Set the initial ticket price
+        double ticketPrice = 0.0;
+        try {
+            ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
+            totalPriceLabel.setText(String.format("Total Price: $%.2f", ticketPrice));
+        } catch (SQLException ex) {
+            System.out.println("Error retrieving ticket price: " + ex);
+        }
+        final double initialTicketPrice = ticketPrice; 
+        
         validateGiftCardButton.addActionListener((e) -> {
             String giftCardCode = giftCardField.getText();
 
@@ -902,8 +911,7 @@ public class ImageJFrame {
                     if (giftCard != null && giftCard.getGiftCardBalance() > 0) {
                         double discountAmount = giftCard.getGiftCardBalance();
                         JOptionPane.showMessageDialog(paymentFrame, "Gift card validated. Discount applied: $" + discountAmount, "Success", JOptionPane.INFORMATION_MESSAGE);
-                        double ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
-                        double updatedPrice = ticketPrice - discountAmount;
+                        double updatedPrice = initialTicketPrice - discountAmount;
                         totalPriceLabel.setText(String.format("Total Price: $%.2f", updatedPrice));
                     } else {
                         JOptionPane.showMessageDialog(paymentFrame, "Invalid or empty gift card.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -926,20 +934,15 @@ public class ImageJFrame {
             if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
                 if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
                     boolean paymentSuccess = false;
-                    double ticketPrice = 0.0;
-                    try {
-                        ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
-                    } catch (SQLException ex) {
-                        System.out.println("Error retrieving ticket price: " + ex);
-                    }
+                    double finalTicketPrice = initialTicketPrice; // Use the effectively final variable
                     if (currentUser != null) {
                         FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
                         PaymentController paymentController = new PaymentController(financialInstitution);
                         PaymentInfo paymentInfo = new PaymentInfo(cardNumber, cvv, expiryDate, name);
-                        paymentSuccess = paymentController.processPayment(paymentInfo, ticketPrice);
+                        paymentSuccess = paymentController.processPayment(paymentInfo, finalTicketPrice);
                         if (paymentSuccess) {
                             try {
-                                database.updateUserBalance(currentUser.getUsername(), ticketPrice);
+                                database.updateUserBalance(currentUser.getUsername(), finalTicketPrice);
                             } catch (SQLException ex) {
                                 System.out.println("Error updating user balance: " + ex);
                             }
@@ -978,7 +981,7 @@ public class ImageJFrame {
                         String receiptContent = "Receipt:\n" +
                                 "Movie: " + selectedMovie.getTitle() + "\n" +
                                 "Seat: " + selectedSeat + "\n" +
-                                "Total Price: $0.00\n" +  // Adjust to actual calculated price
+                                String.format("Total Price: $%.2f\n", finalPrice) +
                                 "Thank you for your purchase!";
                         try (BufferedWriter writer = new BufferedWriter(new FileWriter("receipt.txt"))) {
                             writer.write(receiptContent);
