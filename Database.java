@@ -784,13 +784,17 @@ public class Database {
         return 0.0;
     }
 
+  //method to retrieve username given cardNumber
     public String getUsernameForCard(String cardNumber) throws SQLException {
+        //query to get userName
         String query = "SELECT username FROM paymentInfo WHERE cardNumber = ?";
+        //establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, cardNumber);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    //return userName
                     return rs.getString("username");
                 }
             }
@@ -798,28 +802,37 @@ public class Database {
         return null;
     }
 
+    //method to retrieve ticket by ticketID
     public Ticket getTicketById(int ticketID) throws SQLException {
+    	
+    	// query to get ticket
         String query = "SELECT * FROM tickets WHERE ticketID = ?";
+        
+      // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, ticketID);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                	
                     int movieID = rs.getInt("movieID");
                     int showtimeID = rs.getInt("showtimeID");
                     int seatID = rs.getInt("seatID");
                     System.out.println("Retrieved ticket details: movieID=" + movieID + ", showtimeID=" + showtimeID + ", seatID=" + seatID);
                     
+                    // retrieve movie with movieID
                     Movie movie = getMovieById(movieID);
                     if (movie == null) {
                         System.out.println("Movie is null for movieID=" + movieID);
                     }
                     
+                    // retrieve showtime with showtimeID
                     Showtime showtime = getShowtimeById(showtimeID);
                     if (showtime == null) {
                         System.out.println("Showtime is null for showtimeID=" + showtimeID);
                     }
                     
+                    // retrieve seat with seatID
                     Seat seat = getSeatById(seatID);
                     if (seat == null) {
                         System.out.println("Seat is null for seatID=" + seatID);
@@ -827,6 +840,7 @@ public class Database {
                     
                     if (movie != null && showtime != null && seat != null) {
                         System.out.println("Successfully retrieved ticket components.");
+                        // create new Ticket object
                         return new Ticket(movie, showtime, seat);
                     } else {
                         System.out.println("One of the ticket components is null. Movie: " + movie + ", Showtime: " + showtime + ", Seat: " + seat);
@@ -840,14 +854,20 @@ public class Database {
         }
         return null;
     }
-
+    
+    // method to retrieve gift card by id
     public GiftCard getGiftCardById(int giftCardID) throws SQLException {
+    	
+    	//query to get giftcard
         String query = "SELECT * FROM giftCards WHERE giftCardID = ?";
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, giftCardID);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                	// create new GiftCard object and return it
                     double balance = rs.getDouble("giftCardBalance");
                     String expireDate = rs.getString("expireDate");
                     return new GiftCard(giftCardID, balance, expireDate);
@@ -856,22 +876,33 @@ public class Database {
         }
         return null;
     }
-
+    
+    // method to delete card given its id
     public void deleteGiftCardById(int giftCardID) throws SQLException {
+    	// query to delete giftcard
         String query = "DELETE FROM giftCards WHERE giftCardID = ?";
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, giftCardID);
             ps.executeUpdate();
         }
     }
-
+    
+    // method to set the annual fee status of user
     public void setAnnualFeePaid(String username, boolean isPaid) throws SQLException {
+    	
+    	// establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to set annual isAnnualFeePaid
             String query = "UPDATE users SET isAnnualFeePaid = ? WHERE username = ?";
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 ps.setBoolean(1, isPaid);
                 ps.setString(2, username);
+                
+                // check if isAnnualFeePaid is updated
                 int rowsUpdated = ps.executeUpdate();
                 if (rowsUpdated > 0) {
                     System.out.println("Annual fee status updated for user: " + username);
