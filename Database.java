@@ -21,12 +21,7 @@ public class Database {
     public static void main(String[] args) throws SQLException {
         Database db = new Database("root", "password"); // remember to change credentials
         //uncomment the following method u wanna test
-        // db.getMovies();
-        // db.getAllMovies();
-        // db.getAllUsers();
-        // db.getAllSeats();
-        // db.getAllShowtimes();
-        // db.getAllTickets();
+
     }
     
     // method to get movies from database
@@ -297,96 +292,19 @@ public class Database {
             System.out.println("Error" + e);
         }
     }
-
-    // method to get all users from the database
-    public void getAllUsers() throws SQLException {
+    
+    // method to check if a ticket exists
+    public boolean checkTicketExists(int ticketID) throws SQLException {
     	
     	// establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
         	
-        	// query to get all the users
-            String query = "SELECT * FROM users";
-            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-            	
-            	// from the result set print out the information of every user
-                while (rs.next()) {
-                    int userID = rs.getInt("userID");
-                    String name = rs.getString("name");
-                    String address = rs.getString("address");
-                    String username = rs.getString("username");
-                    String password = rs.getString("password");
-                    System.out.println("User ID: " + userID + ", Name: " + name + ", Address: " + address + ", Username: " + username + ", Password: " + password);
-                }
-            } catch (Exception e) {
-                System.out.println("something went wrong: " + e);
-            }
-        } catch (Exception e) {
-            System.out.println("something went wrong: " + e);
-        }
-    }
-
-    // method to get all the seats
-    public void getAllSeats() throws SQLException {
-        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
-            String query = "SELECT * FROM seats";
-            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int seatID = rs.getInt("seatID");
-                    boolean availability = rs.getBoolean("availability");
-                    int row = rs.getInt("seat_row");
-                    String column = rs.getString("seat_column");
-                    int movieID = rs.getInt("movieID");
-                    System.out.println("Seat ID: " + seatID + ", Availability: " + availability + ", Row: " + row + ", Column: " + column + ", Movie ID: " + movieID);
-                }
-            } catch (Exception e) {
-                System.out.println("something went wrong: " + e);
-            }
-        } catch (Exception e) {
-            System.out.println("something went wrong: " + e);
-        }
-    }
-
-    public void getAllShowtimes() throws SQLException {
-        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
-            String query = "SELECT * FROM showtimes";
-            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int showtimeID = rs.getInt("showtimeID");
-                    int movieID = rs.getInt("movieID");
-                    String time = rs.getString("time");
-                    System.out.println("Showtime ID: " + showtimeID + ", Movie ID: " + movieID + ", Time: " + time);
-                }
-            } catch (Exception e) {
-                System.out.println("something went wrong: " + e);
-            }
-        } catch (Exception e) {
-            System.out.println("something went wrong: " + e);
-        }
-    }
-
-    public void getAllTickets() throws SQLException {
-        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
-            String query = "SELECT * FROM tickets";
-            try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int seatID = rs.getInt("seatID");
-                    int showtimeID = rs.getInt("showtimeID");
-                    int movieID = rs.getInt("movieID");
-                    int userID = rs.getInt("userID");
-                    System.out.println("Seat ID: " + seatID + ", Showtime ID: " + showtimeID + ", Movie ID: " + movieID + ", User ID: " + userID);
-                }
-            } catch (Exception e) {
-                System.out.println("something went wrong: " + e);
-            }
-        } catch (Exception e) {
-            System.out.println("something went wrong: " + e);
-        }
-    }
-
-    public boolean checkTicketExists(int ticketID) throws SQLException {
-        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	// query to see if the the ticket exists in our table
             String query = "SELECT COUNT(*) FROM tickets WHERE ticketID = ?";
+            
             try (PreparedStatement ps = connection.prepareStatement(query)) {
+            	
+            	// see if its valid and return true if so
                 ps.setInt(1, ticketID);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
@@ -398,22 +316,38 @@ public class Database {
         return false;
     }
 
+    // method to cancel a ticket
     public void cancelTicket(int ticketID) throws SQLException {
+    	
+    	// establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to delete ticket from table
             String query = "DELETE FROM tickets WHERE ticketID = ?";
+            
             try (PreparedStatement ps = connection.prepareStatement(query)) {
+            	
                 ps.setInt(1, ticketID);
-                ps.executeUpdate();
+                ps.executeUpdate(); // execute query 
             }
         }
     }
 
+    // query to check tickets associated with card number
     public boolean checkCardNumberForTicket(int ticketID, String cardNumber) throws SQLException {
+    	
+    	// establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query that sees if there is ticket that has ticketID and cardNumber we want
             String query = "SELECT COUNT(*) FROM tickets WHERE ticketID = ? AND cardNumber = ?";
+            
             try (PreparedStatement ps = connection.prepareStatement(query)) {
+            	
                 ps.setInt(1, ticketID);
                 ps.setString(2, cardNumber);
+                
+                // check if a row exists and return true if it does
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
                         return true;
@@ -424,18 +358,28 @@ public class Database {
         return false;
     }
 
+    // method to get tickets from a user
     public ArrayList<Ticket> getUserTickets(String username) throws SQLException {
-        ArrayList<Ticket> tickets = new ArrayList<>();
+    	
+        ArrayList<Ticket> tickets = new ArrayList<>(); // create arraylist to store tickets in
+        
+        // query to get all tickets from a user
         String query = "SELECT * FROM tickets WHERE username = ?";
+        
+        // establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+        		
             PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, username);
+            
+            // iterate through the result set
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int movieID = rs.getInt("movieID");
                     int showtimeID = rs.getInt("showtimeID");
                     int seatID = rs.getInt("seatID");
-                    // Retrieve movie, showtime, and seat details from their respective tables
+                    
+                    // retrieve movie, showtime, and seat details from their respective tables and add to our arraylist
                     Movie movie = getMovieById(movieID);
                     Showtime showtime = getShowtimeById(showtimeID);
                     Seat seat = getSeatById(seatID);
@@ -447,12 +391,20 @@ public class Database {
         }
         return tickets;
     }
-
+    
+    // method to get the movie by their ID
     private Movie getMovieById(int movieID) throws SQLException {
+    	
+    	// query to get movies based on the ID
         String query = "SELECT * FROM movies WHERE movieID = ?";
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+        		
             PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, movieID);
+            
+            // if the movie exists, create a movie object for it and return it
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String title = rs.getString("title");
@@ -467,14 +419,20 @@ public class Database {
         return null;
     }
 
+    // method to get showtime from the movieID
     public Showtime getShowtimeByMovie(int movieId) {
+    	
+    	// query to get the showtimeID and time for the movie
         String query = "SELECT showtimeID, time FROM showtimes WHERE movieID = ?";
-
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+        		
             PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, movieId);
             ResultSet result = statement.executeQuery();
             
+            // if the showtime exists, create a showtime object and return it
             if (result.next()) {
                 int showtimeId = result.getInt("showtimeID");
                 String time = result.getString("time");
@@ -486,13 +444,21 @@ public class Database {
         return null;
     }
     
-
-    private Showtime getShowtimeById(int showtimeID) throws SQLException {
+    // method to get showtime from showtimeID
+    public Showtime getShowtimeById(int showtimeID) throws SQLException {
+    	
+    	// query to get showtime from their ID
         String query = "SELECT * FROM showtimes WHERE showtimeID = ?";
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+        		
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, showtimeID);
+            
             try (ResultSet rs = ps.executeQuery()) {
+            	
+            	// if the showtime exists, create a showtime object and return it
                 if (rs.next()) {
                     int movieID = rs.getInt("movieID");
                     String time = rs.getString("time");
@@ -502,13 +468,22 @@ public class Database {
         }
         return null;
     }
-
-    private Seat getSeatById(int seatID) throws SQLException {
+    
+    // method to get a seat based on its ID
+    public Seat getSeatById(int seatID) throws SQLException {
+    	
+    	// query to get seat based on its ID
         String query = "SELECT * FROM seats WHERE seatID = ?";
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+        		
             PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, seatID);
+            
             try (ResultSet rs = ps.executeQuery()) {
+            	
+            	// if the seat exists, create a seat object and return it
                 if (rs.next()) {
                     boolean availability = rs.getBoolean("availability");
                     int row = rs.getInt("seat_row");
@@ -522,13 +497,20 @@ public class Database {
         return null;
     }
 
+    // method to get all the seats for a movie
     public ArrayList<Seat> getSeatsForMovie(int movieID) throws SQLException {
-        ArrayList<Seat> seats = new ArrayList<>();
+    	
+        ArrayList<Seat> seats = new ArrayList<>(); // arraylist to store our seats
         
+        // establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to get all seats from the movie ID
             String query = "SELECT * FROM seats WHERE movieID = ?";
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 ps.setInt(1, movieID);
+                
+                // put all of the seats into the arraylist
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int seatID = rs.getInt("seatID");
@@ -550,14 +532,22 @@ public class Database {
         
     }
 
+    // method to update the availability of a seat
     public boolean updateSeatAvailability(int seatId, int availability) throws SQLException {
+    	
+    	// establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to change the availability of the seat 
             String query = "UPDATE seats SET availability = ? WHERE seatID = ?";
+            
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 ps.setInt(1, availability);
                 ps.setInt(2, seatId);
                 int rowsUpdated = ps.executeUpdate();
                 System.out.println("Updated seat availability");
+                
+                // check if the seat is updated
                 return rowsUpdated > 0;
             } catch (SQLException e) {
                 System.out.println("Error updating seat" + e);
@@ -569,15 +559,22 @@ public class Database {
         }
     }
 
-    public Seat getSeatForTicket(int ticketID) {        
-        Seat seat = null;
+    // method to get seat from a ticket
+    public Seat getSeatForTicket(int ticketID) {  
+    	
+        Seat seat = null; // if the seat doesn't exist return null
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to get seat from ticket ID
             String query = "SELECT seatID FROM tickets WHERE ticketID = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, ticketID);
     
             ResultSet resultSet = preparedStatement.executeQuery();
             
+            // if seat exists use other function to create a seat object and return it
             if (resultSet.next()) {
                 int seatID = resultSet.getInt("seatID");
                 seat = getSeatDetails(seatID);
@@ -588,17 +585,23 @@ public class Database {
         System.out.println("Successfully retrieved ticket seat");
         return seat;
     }
-
+    
+    // method to get seat details
     public Seat getSeatDetails(int seatID) {
-        Seat seat = null;
+    	
+        Seat seat = null; // if the seat doesn't exist return null
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
             
+        	// query to get seats from seatID
             String query = "SELECT * FROM seats WHERE seatID = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, seatID);
     
             ResultSet result = preparedStatement.executeQuery();
             
+            // if the seat exists create a seat object and return it
             if (result.next()) {
                 int seatId = result.getInt("seatID");
                 int row = result.getInt("seat_row");
@@ -614,8 +617,13 @@ public class Database {
         return seat;
     }
     
+    // method to add ticket to database
     public void insertTicket(Ticket ticket, String username, String cardNumber, java.util.Date dateBought) throws SQLException {
+    	
+    	// establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to get 
             String showtimeQuery = "SELECT time FROM showtimes WHERE showtimeID = ?";
             String showtime = null;
             try (PreparedStatement showtimeStatement = connection.prepareStatement(showtimeQuery)) {
