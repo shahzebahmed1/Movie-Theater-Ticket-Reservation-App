@@ -5,7 +5,7 @@
 
 Welcome to the Movie Ticket Web Application project developed by Group 30 for the ENSF 480 course.
 
-First download the .java and .class files, as well as the mysql-connector-j-8.0.31.jar. 
+First download the .java and .class files, as well as the mysql-connector-j-8.0.31.jar and AcmePlex1.png image. 
 
 Then set up the MySQL. In line 114 of ImageJFrame.java, you may have to replace the user and password with your own login if it isnt 'root' and 'password'. You will have to recompile as well if you change this. In your MySQLWorkbench, first run the database_creation.sql query. After that, run the ImageJFrame with the database:
 To run ImageJFrame with the db: `java -cp .:mysql-connector-j-8.0.31.jar ImageJFrame`. 
