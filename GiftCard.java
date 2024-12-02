@@ -49,6 +49,12 @@ public class GiftCard {
 	public GiftCard() {
 	}
 	
+	public GiftCard(int giftCardID, double giftCardBalance, String expireDate) {
+	    this.giftCardID = giftCardID;
+	    this.giftCardBalance = giftCardBalance;
+	    this.expireDate = expireDate;
+	}
+
 	public int getGiftCardID() {
 		return giftCardID;
 	}

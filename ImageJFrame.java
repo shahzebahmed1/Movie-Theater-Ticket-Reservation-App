@@ -892,21 +892,20 @@ public class ImageJFrame {
             String giftCardCode = giftCardField.getText();
 
             if (!giftCardCode.isEmpty()) {
-                // Simulate gift card validation
-                boolean isValidGiftCard = true; // Replace with actual validation logic later
-                double discountAmount = 10.0; // Example discount amount
-
-                if (isValidGiftCard) {
-                    JOptionPane.showMessageDialog(paymentFrame, "Gift card validated. Discount applied: $" + discountAmount, "Success", JOptionPane.INFORMATION_MESSAGE);
-                    try {
+                try {
+                    int giftCardID = Integer.parseInt(giftCardCode);
+                    GiftCard giftCard = database.getGiftCardById(giftCardID);
+                    if (giftCard != null && giftCard.getGiftCardBalance() > 0) {
+                        double discountAmount = giftCard.getGiftCardBalance();
+                        JOptionPane.showMessageDialog(paymentFrame, "Gift card validated. Discount applied: $" + discountAmount, "Success", JOptionPane.INFORMATION_MESSAGE);
                         double ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
                         double updatedPrice = ticketPrice - discountAmount;
                         totalPriceLabel.setText(String.format("Total Price: $%.2f", updatedPrice));
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(paymentFrame, "Error retrieving ticket price: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(paymentFrame, "Invalid or empty gift card.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
-                } else {
-                    JOptionPane.showMessageDialog(paymentFrame, "Invalid gift card.", "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (NumberFormatException | SQLException ex) {
+                    JOptionPane.showMessageDialog(paymentFrame, "Error validating gift card: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 JOptionPane.showMessageDialog(paymentFrame, "Please enter a gift card code.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -953,6 +952,7 @@ public class ImageJFrame {
                         seat.setAvailability(false);
                         movieController.updateSeatAvailability(seat);
                         Ticket ticket = new Ticket(selectedMovie, new Showtime(showtimeId, selectedMovie.getMovieId(), "2023-12-01 19:00:00"), seat);
+                        double finalPrice = Double.parseDouble(totalPriceLabel.getText().replace("Total Price: $", ""));
                         try {
                             String username = null;
                             if (getCurrentUser() != null) {
