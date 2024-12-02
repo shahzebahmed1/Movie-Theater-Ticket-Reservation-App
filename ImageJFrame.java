@@ -374,14 +374,18 @@ public class ImageJFrame {
             }
 
             User u = new User();
-             if (u.register(database, username, password, name, address, cardNumber, cvv, expiryDate)) {
-            	 JOptionPane.showMessageDialog(registerFrame, "Registration successful! Your membership is valid till: " + formattedDate, "Success", JOptionPane.INFORMATION_MESSAGE);
-                 registerFrame.dispose();
-             } else {
-            	 JOptionPane.showMessageDialog(registerFrame, "Registration not successful! Duplicate username or card number exists ", "Error", JOptionPane.INFORMATION_MESSAGE);
-             }
-
-            
+            if (u.register(database, username, password, name, address, cardNumber, cvv, expiryDate)) {
+                try {
+                    database.updateUserBalance(username, 20.00); // Deduct $20 annual fee
+                    database.setAnnualFeePaid(username, true); // Set isAnnualFeePaid to true
+                    JOptionPane.showMessageDialog(registerFrame, "Registration successful! Your membership is valid till: " + formattedDate, "Success", JOptionPane.INFORMATION_MESSAGE);
+                    registerFrame.dispose();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(registerFrame, "Error updating balance or setting annual fee status: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(registerFrame, "Registration not successful! Duplicate username or card number exists ", "Error", JOptionPane.INFORMATION_MESSAGE);
+            }
         });
 
         // Add the panel to the frame
