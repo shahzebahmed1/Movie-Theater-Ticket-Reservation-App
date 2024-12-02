@@ -623,19 +623,23 @@ public class Database {
     	// establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
         	
-        	// query to get 
+        	// query to get time of the film
             String showtimeQuery = "SELECT time FROM showtimes WHERE showtimeID = ?";
-            String showtime = null;
+            String showtime = null; // return null if time doesn't exist
+            
             try (PreparedStatement showtimeStatement = connection.prepareStatement(showtimeQuery)) {
                 showtimeStatement.setInt(1, ticket.getShowtime().getShowtimeID());
                 try (ResultSet rs = showtimeStatement.executeQuery()) {
                     if (rs.next()) {
-                        showtime = rs.getString("time");
+                        showtime = rs.getString("time"); // update the time if it exists
                     }
                 }
             }
-
+            
+            // query to insert a ticket
             String query = "INSERT INTO tickets (movieID, showtimeID, seatID, username, cardNumber, dateBought, dateOfFilm) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            // fill in parameters
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, ticket.getMovie().getMovieId());
             preparedStatement.setInt(2, ticket.getShowtime().getShowtimeID());
@@ -648,7 +652,8 @@ public class Database {
             preparedStatement.setString(5, cardNumber);
             preparedStatement.setDate(6, new java.sql.Date(dateBought.getTime()));
             preparedStatement.setString(7, showtime);
-
+            
+            // check if ticket is successfully added
             int rowsChanged = preparedStatement.executeUpdate();
             if (rowsChanged > 0) {
                 System.out.println("Ticket added to the database");
@@ -660,14 +665,21 @@ public class Database {
         }
     }
 
+    // method to get all usernames from database
     public ArrayList<String> getAllUsernames() throws SQLException {
-        ArrayList<String> usernames = new ArrayList<>();
+    	
+        ArrayList<String> usernames = new ArrayList<>(); // arraylist to store all usernames
+        
+        // establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to get usernames from user
             String query = "SELECT username FROM users";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+            		
                  ResultSet result = preparedStatement.executeQuery()) {
                 while (result.next()) {
-                    usernames.add(result.getString("username"));
+                    usernames.add(result.getString("username")); // add to our arraylist
                 }
             }
         } catch (SQLException e) {
@@ -676,27 +688,42 @@ public class Database {
         return usernames;
     }
 
+    // method to delete a user from database
     public boolean deleteUserFromDatabase(String username) {
+    	
+    	// establish a conenction
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to delete a user from their username
             String query = "DELETE FROM users WHERE username = ?";
+            
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, username);
-                int rowsDeleted = preparedStatement.executeUpdate();
+                
+                int rowsDeleted = preparedStatement.executeUpdate(); 
                 System.out.println("Deleted user");
-                return rowsDeleted > 0;
+                return rowsDeleted > 0; // check if user is deleted
             }
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
             return false;
         }
     }
-
+    
+    // method to get payment info from a user
     public PaymentInfo getPaymentInfoForUser(String username) {
-        PaymentInfo paymentInfo = null;
+    	
+        PaymentInfo paymentInfo = null; // assume null initially
+        
+        // query to get payment info of a user based on their name
         String query = "SELECT cardNumber, cvv, expireDate, cardHolder FROM paymentInfo WHERE username = ?";
+        
+        // establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, username);
+            
+            // if the payment info exists, create an object with it and return it
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String cardNumber = rs.getString("cardNumber");
@@ -712,12 +739,20 @@ public class Database {
         return paymentInfo;
     }
     
+    // method to update the balance of a user
     public void updateUserBalance(String username, double amount) throws SQLException {
+    	
+    	// establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to update the balance of a users credit card
             String query = "UPDATE paymentinfo SET balance = balance - ? WHERE username = ?";
+            
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 ps.setDouble(1, amount);
                 ps.setString(2, username);
+                
+                // check if balance is updated or not
                 int rowsUpdated = ps.executeUpdate();
                 if (rowsUpdated > 0) {
                     System.out.println("Balance updated for user: " + username + " by amount: " + amount); // Debug statement
@@ -728,11 +763,18 @@ public class Database {
         }
     }
     
+    // method to get price of a ticket
     public double getTicketPrice(int movieId) throws SQLException {
+    	
+    	// query to get price of ticket based on movie ID
         String query = "SELECT ticketPrice FROM movies WHERE movieID = ?";
+        
+        // establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, movieId);
+            
+            // if there is a ticket price then return it
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getDouble("ticketPrice");
@@ -742,17 +784,13 @@ public class Database {
         return 0.0;
     }
 
-    //method to retrieve username given cardNumber
     public String getUsernameForCard(String cardNumber) throws SQLException {
-        //query to get userName
         String query = "SELECT username FROM paymentInfo WHERE cardNumber = ?";
-        //establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, cardNumber);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    //return userName
                     return rs.getString("username");
                 }
             }
@@ -760,11 +798,8 @@ public class Database {
         return null;
     }
 
-    //method to retrieve ticket by ticketID
     public Ticket getTicketById(int ticketID) throws SQLException {
-        //query to get ticket
         String query = "SELECT * FROM tickets WHERE ticketID = ?";
-        //establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, ticketID);
@@ -775,19 +810,16 @@ public class Database {
                     int seatID = rs.getInt("seatID");
                     System.out.println("Retrieved ticket details: movieID=" + movieID + ", showtimeID=" + showtimeID + ", seatID=" + seatID);
                     
-                    //retrieve movie with movieID
                     Movie movie = getMovieById(movieID);
                     if (movie == null) {
                         System.out.println("Movie is null for movieID=" + movieID);
                     }
                     
-                    //retrieve showtime with showtimeID
                     Showtime showtime = getShowtimeById(showtimeID);
                     if (showtime == null) {
                         System.out.println("Showtime is null for showtimeID=" + showtimeID);
                     }
                     
-                    //retrieve seat with seatID
                     Seat seat = getSeatById(seatID);
                     if (seat == null) {
                         System.out.println("Seat is null for seatID=" + seatID);
@@ -795,7 +827,6 @@ public class Database {
                     
                     if (movie != null && showtime != null && seat != null) {
                         System.out.println("Successfully retrieved ticket components.");
-                        //create new Ticket object
                         return new Ticket(movie, showtime, seat);
                     } else {
                         System.out.println("One of the ticket components is null. Movie: " + movie + ", Showtime: " + showtime + ", Seat: " + seat);
@@ -809,20 +840,16 @@ public class Database {
         }
         return null;
     }
-    
-    //method to retrieve gift card by id
+
     public GiftCard getGiftCardById(int giftCardID) throws SQLException {
-        //query to get giftcard
         String query = "SELECT * FROM giftCards WHERE giftCardID = ?";
-        //establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, giftCardID);
-            try (ResultSet result = ps.executeQuery()) {
-                if (result.next()) {
-                    double balance = result.getDouble("giftCardBalance");
-                    String expireDate = result.getString("expireDate");
-                    //create new GiftCard object and return it
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    double balance = rs.getDouble("giftCardBalance");
+                    String expireDate = rs.getString("expireDate");
                     return new GiftCard(giftCardID, balance, expireDate);
                 }
             }
@@ -830,11 +857,8 @@ public class Database {
         return null;
     }
 
-    //method to delete card given its id
     public void deleteGiftCardById(int giftCardID) throws SQLException {
-        //query to delete giftcard
         String query = "DELETE FROM giftCards WHERE giftCardID = ?";
-        //establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
              PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, giftCardID);
@@ -842,17 +866,13 @@ public class Database {
         }
     }
 
-    // method to set the annual fee status of user
     public void setAnnualFeePaid(String username, boolean isPaid) throws SQLException {
-        //establish connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
-            //query to set annual isAnnualFeePaid
             String query = "UPDATE users SET isAnnualFeePaid = ? WHERE username = ?";
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 ps.setBoolean(1, isPaid);
                 ps.setString(2, username);
                 int rowsUpdated = ps.executeUpdate();
-                //check if isAnnualFeePaid is updated
                 if (rowsUpdated > 0) {
                     System.out.println("Annual fee status updated for user: " + username);
                 } else {
