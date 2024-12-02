@@ -248,16 +248,15 @@ public class ImageJFrame {
         mainFrame.repaint();
     }
 
+    //Register user
     private void showRegistrationForm() {
         JFrame registerFrame = new JFrame("Register");
         JPanel registerPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        // Set default spacing for components
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Alert Message
         LocalDate oneYearFromToday = LocalDate.now().plusYears(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
         String formattedDate = oneYearFromToday.format(formatter);
@@ -266,13 +265,12 @@ public class ImageJFrame {
         alertLabel.setHorizontalAlignment(SwingConstants.CENTER);
         alertLabel.setPreferredSize(new Dimension(400, 30));
 
-        // Add the alert message to the panel
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 4;
         registerPanel.add(alertLabel, gbc);
 
-        // Username
+        //username field
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
@@ -281,14 +279,14 @@ public class ImageJFrame {
         JTextField usernameField = new JTextField(15);
         registerPanel.add(usernameField, gbc);
 
-        // Password
+        //password field
         gbc.gridx = 2;
         registerPanel.add(new JLabel("Password:"), gbc);
         gbc.gridx = 3;
         JPasswordField passwordField = new JPasswordField(15);
         registerPanel.add(passwordField, gbc);
 
-        // Name
+        //name field
         gbc.gridx = 0;
         gbc.gridy = 2;
         registerPanel.add(new JLabel("Name:"), gbc);
@@ -296,14 +294,14 @@ public class ImageJFrame {
         JTextField nameField = new JTextField(15);
         registerPanel.add(nameField, gbc);
 
-        // Address
+        //address field
         gbc.gridx = 2;
         registerPanel.add(new JLabel("Address:"), gbc);
         gbc.gridx = 3;
         JTextField addressField = new JTextField(15);
         registerPanel.add(addressField, gbc);
 
-        // Card Number
+        //card number field
         gbc.gridx = 0;
         gbc.gridy = 3;
         registerPanel.add(new JLabel("Card Number:"), gbc);
@@ -311,14 +309,14 @@ public class ImageJFrame {
         JTextField cardNumberField = new JTextField(15);
         registerPanel.add(cardNumberField, gbc);
 
-        // Expiry Date (MM-YY format)
+        //expiry Date (YYYY-MM-DD format)
         gbc.gridx = 2;
         registerPanel.add(new JLabel("Expiry Date (YYYY-MM-DD):"), gbc);
         gbc.gridx = 3;
         JTextField expiryDateField = new JTextField(15);
         registerPanel.add(expiryDateField, gbc);
 
-        // CVV
+        //cvv field
         gbc.gridx = 0;
         gbc.gridy = 4;
         registerPanel.add(new JLabel("CVV:"), gbc);
@@ -326,14 +324,14 @@ public class ImageJFrame {
         JTextField cvvField = new JTextField(15);
         registerPanel.add(cvvField, gbc);
 
-        // Checkbox for confirming annual fee
+        //checkbox for confirming annual fee
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 4;
         JCheckBox confirmFeeCheckbox = new JCheckBox("I confirm the $20 annual fee charge.");
         registerPanel.add(confirmFeeCheckbox, gbc);
 
-        // Register Button (initially disabled)
+        //register button
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 4;
@@ -342,12 +340,11 @@ public class ImageJFrame {
         registerButton.setEnabled(false); // Initially disabled
         registerPanel.add(registerButton, gbc);
 
-        // Enable register button only when the checkbox is selected
+        //enable register button only when the checkbox is selected
         confirmFeeCheckbox.addActionListener(e -> {
             registerButton.setEnabled(confirmFeeCheckbox.isSelected());
         });
 
-        // ActionListener for registration
         registerButton.addActionListener(e -> {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
@@ -357,29 +354,30 @@ public class ImageJFrame {
             String expiryDate = expiryDateField.getText();
             String cvv = cvvField.getText();
 
-            // Validate inputs
+            //validate inputs for registration
             if (username.isEmpty() || password.isEmpty() || name.isEmpty() || address.isEmpty() || cardNumber.isEmpty() || expiryDate.isEmpty() || cvv.isEmpty()) {
                 JOptionPane.showMessageDialog(registerFrame, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Check for a valid expiry date in yyyy-MM-dd format
+            //check for a valid expiry date
             if (!validDate(expiryDate)) {
                 JOptionPane.showMessageDialog(registerFrame, "Please enter a valid expiry date in yyyy-MM-dd format.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Basic validation for card number and CVV
+            //validation for card number and CVV
             if (cardNumber.length() != 16 || cvv.length() != 3) {
                 JOptionPane.showMessageDialog(registerFrame, "Invalid card details.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
+            //register new user
             User u = new User();
             if (u.register(database, username, password, name, address, cardNumber, cvv, expiryDate)) {
                 try {
-                    database.updateUserBalance(username, 20.00); // Deduct $20 annual fee
-                    database.setAnnualFeePaid(username, true); // Set isAnnualFeePaid to true
+                    database.updateUserBalance(username, 20.00); //take away 20 from their balance
+                    database.setAnnualFeePaid(username, true); 
                     JOptionPane.showMessageDialog(registerFrame, "Registration successful! Your membership is valid till: " + formattedDate, "Success", JOptionPane.INFORMATION_MESSAGE);
                     registerFrame.dispose();
                 } catch (SQLException ex) {
@@ -390,7 +388,6 @@ public class ImageJFrame {
             }
         });
 
-        // Add the panel to the frame
         registerFrame.add(registerPanel);
         registerFrame.pack();
         registerFrame.setLocationRelativeTo(null);
@@ -403,13 +400,13 @@ public class ImageJFrame {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // format the date should be
         try {
             LocalDate d = LocalDate.parse(date, formatter);
-            return true; // if we can parse the data, then it is a valid date
+            return true; 
         } catch (DateTimeParseException e) {
-            return false; // otherwise its invalid
+            return false;
         }
     }
 
-    // Show Invoice Lookup Frame
+    //Show Invoice Lookup Frame
     private void showInvoiceLookupFrame() {
         JFrame invoiceFrame = new JFrame("Invoice Lookup");
 
@@ -427,6 +424,7 @@ public class ImageJFrame {
         invoicePanel.add(cardNumberField);
         invoicePanel.add(lookupButton);
 
+        //search for ticket based on ticketID and cardnumber used to pay for ticket
         lookupButton.addActionListener(e -> {
             String invoiceNumber = invoiceField.getText();
             String cardNumber = cardNumberField.getText();
@@ -436,9 +434,9 @@ public class ImageJFrame {
                 if (ticketFound) {
                     boolean cardMatches = database.checkCardNumberForTicket(ticketID, cardNumber);
                     if (cardMatches) {
-                        int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice Lookup", JOptionPane.YES_NO_OPTION);
+                        int option = JOptionPane.showConfirmDialog(invoiceFrame, "Invoice found! Do you want to cancel the ticket for a refund?", "Invoice", JOptionPane.YES_NO_OPTION);
                         if (option == JOptionPane.YES_OPTION) {
-                            Ticket t = database.getTicketById(ticketID); // Ensure the ticket is properly initialized
+                            Ticket t = database.getTicketById(ticketID); 
                             if (t != null) {
                                 System.out.println("Ticket retrieved: " + t);
                                 if (t.getMovie() != null) {
@@ -450,6 +448,7 @@ public class ImageJFrame {
                                         JOptionPane.showMessageDialog(invoiceFrame, "Error retrieving ticket price: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
                                     }
                                     
+                                    //reset seat availability
                                     Seat seat = database.getSeatForTicket(ticketID); 
                                     seat.setAvailability(true);
                                     movieController.updateSeatAvailability(seat);
@@ -468,7 +467,7 @@ public class ImageJFrame {
                                         invoiceFrame.dispose();
                                         
                                     } else {
-                                        // Increase balance on the user's card
+                                        //increase balance on the user's card
                                         try {
                                             String username = database.getUsernameForCard(cardNumber);
                                             if (username != null) {
@@ -531,7 +530,7 @@ public class ImageJFrame {
 
     // Add Movie
     private void addMovie() {
-        JPanel panel = new JPanel(new GridLayout(6, 2, 5, 5));  // Updated to 6 rows
+        JPanel panel = new JPanel(new GridLayout(6, 2, 5, 5));  
 
         //Create and add input fields
         JLabel titleLabel = new JLabel("Movie Title:");
