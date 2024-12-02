@@ -815,7 +815,7 @@ public class ImageJFrame {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(10, 10, 10, 10);
         constraints.anchor = GridBagConstraints.WEST;
-    
+
         JLabel movieLabel = new JLabel("Movie: " + selectedMovie.getTitle());
         JLabel seatLabel = new JLabel("Seat: " + selectedSeat);
         JLabel nameLabel = new JLabel("Cardholder Name:");
@@ -826,8 +826,12 @@ public class ImageJFrame {
         JTextField expiryField = new JTextField(10);
         JLabel cvvLabel = new JLabel("CVV:");
         JTextField cvvField = new JTextField(4);
+        JLabel giftCardLabel = new JLabel("Gift Card:");
+        JTextField giftCardField = new JTextField(20);
+        JButton validateGiftCardButton = new JButton("Validate Gift Card");
+        JLabel totalPriceLabel = new JLabel("Total Price: $0.00"); // Total price label
         JButton confirmButton = new JButton("Confirm Payment");
-    
+
         // Autofill credit card information if user is logged in
         if (currentUser != null) {
             PaymentInfo paymentInfo = database.getPaymentInfoForUser(currentUser.getUsername());
@@ -842,7 +846,8 @@ public class ImageJFrame {
                 cvvField.setEditable(false);
             }
         }
-    
+
+        // Add components to the panel
         paymentPanel.add(movieLabel, constraints);
         constraints.gridy = 1;
         paymentPanel.add(seatLabel, constraints);
@@ -867,22 +872,56 @@ public class ImageJFrame {
         paymentPanel.add(cvvField, constraints);
         constraints.gridx = 0;
         constraints.gridy = 6;
+        paymentPanel.add(giftCardLabel, constraints);
+        constraints.gridx = 1;
+        paymentPanel.add(giftCardField, constraints);
+        constraints.gridx = 0;
+        constraints.gridy = 7;
+        paymentPanel.add(validateGiftCardButton, constraints);
+        constraints.gridy = 8;
+        paymentPanel.add(totalPriceLabel, constraints);
+        constraints.gridy = 9;
         constraints.gridwidth = 2;
         paymentPanel.add(confirmButton, constraints);
-    
+
+        // Set up the validate gift card button action listener
+        validateGiftCardButton.addActionListener((e) -> {
+            String giftCardCode = giftCardField.getText();
+
+            if (!giftCardCode.isEmpty()) {
+                // Simulate gift card validation
+                boolean isValidGiftCard = true; // Replace with actual validation logic later
+                double discountAmount = 10.0; // Example discount amount
+
+                if (isValidGiftCard) {
+                    JOptionPane.showMessageDialog(paymentFrame, "Gift card validated. Discount applied: $" + discountAmount, "Success", JOptionPane.INFORMATION_MESSAGE);
+                    try {
+                        double ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
+                        double updatedPrice = ticketPrice - discountAmount;
+                        totalPriceLabel.setText(String.format("Total Price: $%.2f", updatedPrice));
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(paymentFrame, "Error retrieving ticket price: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(paymentFrame, "Invalid gift card.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(paymentFrame, "Please enter a gift card code.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         confirmButton.addActionListener((e) -> {
             String name = nameField.getText();
             String cardNumber = cardNumberField.getText();
             String expiryDate = expiryField.getText();
             String cvv = cvvField.getText();
-    
+
             if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
                 if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
                     boolean paymentSuccess = false;
                     double ticketPrice = 0.0;
                     try {
                         ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
-                        System.out.println("Ticket Price: " + ticketPrice); // Debug statement
                     } catch (SQLException ex) {
                         System.out.println("Error retrieving ticket price: " + ex);
                     }
@@ -906,11 +945,11 @@ public class ImageJFrame {
                             System.out.println("Error adding card to database: " + ex);
                         }
                     }
-    
+
                     if (paymentSuccess) {
                         seat.setAvailability(false);
                         movieController.updateSeatAvailability(seat);
-                        Ticket ticket = new Ticket(selectedMovie, new Showtime(showtimeId, selectedMovie.getMovieId(), "2023-12-01 19:00:00"), seat); 
+                        Ticket ticket = new Ticket(selectedMovie, new Showtime(showtimeId, selectedMovie.getMovieId(), "2023-12-01 19:00:00"), seat);
                         try {
                             String username = null;
                             if (getCurrentUser() != null) {
@@ -920,7 +959,7 @@ public class ImageJFrame {
                         } catch (SQLException er) {
                             System.out.println("Error " + er);
                         }
-    
+
                         JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked.", "Success", JOptionPane.INFORMATION_MESSAGE);
                         paymentFrame.dispose();
                     } else {
@@ -933,9 +972,9 @@ public class ImageJFrame {
                 JOptionPane.showMessageDialog(paymentFrame, "Please fill in payment details.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-    
+
         paymentFrame.add(paymentPanel);
-        paymentFrame.setSize(500, 400);
+        paymentFrame.setSize(500, 500);
         paymentFrame.setLocationRelativeTo(null);
         paymentFrame.setVisible(true);
     }
