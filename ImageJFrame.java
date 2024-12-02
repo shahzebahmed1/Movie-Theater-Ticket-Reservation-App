@@ -18,75 +18,75 @@ import java.io.IOException;
 
 
 public class ImageJFrame {
-    private String userType = "guest"; // Default user type is "guest"
-    private boolean isAdmin = false; // Tracks if the current user is an admin
-    private JButton logoutButton; // Logout button (only shown when logged in)
+    private String userType = "guest"; //default user type is "guest"
+    private boolean isAdmin = false; //keeps tracks if the current user is an admin
+    private JButton logoutButton; //logout button (only shown when logged in)
     private JButton orderHistoryButton, invoiceLookupButton, adminControlsButton;
     private JFrame mainFrame;
     private JTextField searchField;
     private JButton searchButton;
     private JButton loginButton;
     private JButton createAccountButton;
-    private User currentUser; // Add a field to store the current user
+    private User currentUser; //stores current user
     private JButton bookTicketButton;
 
-    private ArrayList<String> movies = new ArrayList<>(); // Placeholder for movies
-    private ArrayList<String> users = new ArrayList<>(); // Placeholder for users
+    private ArrayList<String> movies = new ArrayList<>(); //placeholder for movies
+    private ArrayList<String> users = new ArrayList<>(); //placeholder for users
 
     private Database database;
     private MovieController movieController;
 
     ImageJFrame() {
-        // Add some default movies for testing
+        //Add some default movies for testing
         movies.add("Movie 1 - 12:00 PM");
         movies.add("Movie 2 - 3:00 PM");
         movies.add("Movie 3 - 6:00 PM");
 
-        // Add some default users
+        //Add some default users
         users.add("user1");
         users.add("user2");
 
-        // Create JFrame
+        //create JFrame
         mainFrame = new JFrame("AcmePlex");
         mainFrame.setLayout(new BorderLayout());
 
-        // Create a layered pane for overlaying the image and buttons
+        //create a layered pane for overlaying the image and buttons
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setPreferredSize(new Dimension(875, 500));
 
-        // Create a JLabel with a scaled image
+        //create a JLabel with a scaled image
         ImageIcon originalIcon = new ImageIcon("AcmePlex1.png");
         Image scaledImage = originalIcon.getImage().getScaledInstance(875, 500, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
 
         JLabel imageLabel = new JLabel(scaledIcon);
-        imageLabel.setBounds(0, 0, 875, 500); // Full-size background image
-        layeredPane.add(imageLabel, Integer.valueOf(0)); // Add image at the background layer
+        imageLabel.setBounds(0, 0, 875, 500);
+        layeredPane.add(imageLabel, Integer.valueOf(0)); 
 
-        // Create a JPanel for buttons
+        //create a JPanel for buttons
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setOpaque(false); // Make the panel transparent
+        buttonPanel.setOpaque(false); 
         buttonPanel.setLayout(new GridBagLayout());
-        buttonPanel.setBounds(0, 0, 875, 500); // Same size as the image
+        buttonPanel.setBounds(0, 0, 875, 500); 
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0;
         gbc.gridy = 0;
 
-        // Create buttons
+        //create buttons
         bookTicketButton = new JButton("Book Ticket");
         orderHistoryButton = new JButton("Order History");
-        orderHistoryButton.setVisible(false); // Hidden by default
+        orderHistoryButton.setVisible(false); 
         invoiceLookupButton = new JButton("Invoice Lookup");
         createAccountButton = new JButton("Register");
         loginButton = new JButton("Login");
         logoutButton = new JButton("Logout");
-        logoutButton.setVisible(false); // Hidden by default
+        logoutButton.setVisible(false); 
         adminControlsButton = new JButton("Admin Controls");
-        adminControlsButton.setVisible(false); // Visible only for admins
+        adminControlsButton.setVisible(false); //visible only for admins
 
-        // Add buttons to the button panel
+        //add buttons to the button panel
         buttonPanel.add(bookTicketButton, gbc);
 
         gbc.gridy++;
@@ -107,14 +107,14 @@ public class ImageJFrame {
         gbc.gridy++;
         buttonPanel.add(adminControlsButton, gbc);
 
-        // Add the button panel to the layered pane
-        layeredPane.add(buttonPanel, Integer.valueOf(1)); // Add buttons at the foreground layer
+        //add the button panel to the layered pane
+        layeredPane.add(buttonPanel, Integer.valueOf(1)); //add buttons at the foreground layer
 
-        // Initialize database and movie controller
-        database = new Database("root", "password"); // use your credentials!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //initialize database and movie controller
+        database = new Database("root", "password"); // use your credentials!
         movieController = new MovieController(database);
 
-        // ActionListener for buttons
+        //ActionListener for buttons
         bookTicketButton.addActionListener(e -> showMovieSelectionPage());
         createAccountButton.addActionListener(e -> showRegistrationForm());
         loginButton.addActionListener(e -> showLoginFrame(loginButton, createAccountButton));
@@ -123,20 +123,19 @@ public class ImageJFrame {
         adminControlsButton.addActionListener(e -> showAdminControls());
         orderHistoryButton.addActionListener(e -> {
             if (userType.equals("user")) {
-                showOrderHistory(currentUser); // Ensure currentUser is passed correctly
+                showOrderHistory(currentUser); //ensure currentUser is passed correctly
             }
         });
 
-        // Add the layered pane to the frame
         mainFrame.add(layeredPane, BorderLayout.CENTER);
 
-        // Frame settings
         mainFrame.setSize(875, 500);
         mainFrame.setResizable(false);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setVisible(true);
     }
 
+    //show order history for user
     private void showOrderHistory(User user) {
         JFrame orderHistoryFrame = new JFrame("Order History");
         JPanel orderHistoryPanel = new JPanel(new BorderLayout());
@@ -144,6 +143,7 @@ public class ImageJFrame {
         JTextArea orderHistoryTextArea = new JTextArea();
         orderHistoryTextArea.setEditable(false);
 
+        //retrieve all tickets and their information belonging to the user
         try {
             ArrayList<Ticket> tickets = database.getUserTickets(user.getUsername());
             if (tickets.isEmpty()) {
@@ -165,11 +165,12 @@ public class ImageJFrame {
         orderHistoryFrame.setVisible(true);
     }
 
+    //returns the current user
     private User getCurrentUser() {
         return currentUser;
     }
 
-    // User login logic
+    //User login
     private void showLoginFrame(JButton loginButton, JButton createAccountButton) {
         JFrame loginFrame = new JFrame("Login");
         JPanel loginPanel = new JPanel(new GridLayout(3, 2, 10, 10));
@@ -180,6 +181,7 @@ public class ImageJFrame {
         JPasswordField passwordField = new JPasswordField();
         JButton loginSubmitButton = new JButton("Login");
 
+        //add input fields
         loginPanel.add(usernameLabel);
         loginPanel.add(usernameField);
         loginPanel.add(passwordLabel);
@@ -193,6 +195,7 @@ public class ImageJFrame {
 
             User u = new User();
 
+            //admin login
             if (username.equals("admin") && password.equals("admin123")) {
                 JOptionPane.showMessageDialog(loginFrame, "Admin Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 userType = "admin";
@@ -204,12 +207,13 @@ public class ImageJFrame {
                 bookTicketButton.setVisible(false);
                 loginFrame.dispose();
             } else
+                //verify user information in databse and login user
                 try {
                     if (u.login(database, username, password)) {
                         JOptionPane.showMessageDialog(loginFrame, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                         userType = "user";
                         currentUser = u; 
-                        currentUser.setUsername(username); // Ensure the username is set for the current user
+                        currentUser.setUsername(username); 
                         logoutButton.setVisible(true);
                         orderHistoryButton.setVisible(true);
                         loginButton.setVisible(false);
@@ -219,9 +223,7 @@ public class ImageJFrame {
                     } else {
                         JOptionPane.showMessageDialog(loginFrame, "Invalid credentials.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
-                } catch (HeadlessException | SQLException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                } catch (SQLException ex) {
                 }
         });
 
@@ -230,11 +232,11 @@ public class ImageJFrame {
         loginFrame.setVisible(true);
     }
 
-    // Logout logic
+    //Logout user
     private void logout() {
         userType = "guest";
         isAdmin = false;
-        currentUser = null; // Clear the current user
+        currentUser = null; //clear the current user
         JOptionPane.showMessageDialog(mainFrame, "You have been logged out.", "Logout", JOptionPane.INFORMATION_MESSAGE);
         logoutButton.setVisible(false);
         orderHistoryButton.setVisible(false);
@@ -609,16 +611,21 @@ public class ImageJFrame {
             JOptionPane.showMessageDialog(mainFrame, "No movies to delete", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
+        //retrieves all the movies from the database along with their showtimes
         String[] movieTitlesWithShowtimes = new String[movies.size()];
         for (int i = 0; i < movies.size(); i++) {
             Movie movie = movies.get(i);
             Showtime showtime = database.getShowtimeByMovie(movie.getMovieId());
             movieTitlesWithShowtimes[i] = movie.getTitle() + " - Showtime: " + showtime.getTime();
         }
+
+        //Create dropdown menu to select a movie to delete
         String selectedMovieTitle = (String) JOptionPane.showInputDialog(mainFrame, "Select movie to delete", "Delete", JOptionPane.QUESTION_MESSAGE, null,movieTitlesWithShowtimes, movieTitlesWithShowtimes[0]);
         if (selectedMovieTitle != null) {
             Movie movieToRemove = null;
             
+
             for (Movie movie : movies) {
                 String movieTitleWithShowtime = movie.getTitle() + " - Showtime: " + database.getShowtimeByMovie(movie.getMovieId()).getTime();
                 if (movieTitleWithShowtime.equals(selectedMovieTitle)) {
@@ -627,6 +634,7 @@ public class ImageJFrame {
                 }
             }
             
+            //remove selected movie and showtime from database along with their seats. 
             if (movieToRemove != null) {
                 try {
                     database.removeMovie(movieToRemove.getMovieId());
@@ -652,9 +660,10 @@ public class ImageJFrame {
                 return;
             }
     
-    
+            //Dropdown menu to select a user to delete
             String selectedUser = (String) JOptionPane.showInputDialog(mainFrame, "Select a user to delete:", "Delete User",
             JOptionPane.QUESTION_MESSAGE, null, usernames.toArray(new String[0]), usernames.get(0));
+            //Delete user from database
             if (selectedUser != null) {
                 if (database.deleteUserFromDatabase(selectedUser)) {
                     JOptionPane.showMessageDialog(mainFrame, "User deleted", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -673,15 +682,15 @@ public class ImageJFrame {
 
         JPanel moviePanel = new JPanel(new BorderLayout());
         JPanel searchPanel = new JPanel(new FlowLayout());
-
         searchField = new JTextField(20);
         searchButton = new JButton("Search");
-
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
 
+        //Movies shown will depend on if you are a RU or just user
         ArrayList<Movie> allMovies = userType.equals("guest") ? movieController.browseMovies(true) : movieController.browseMovies(false);
 
+        //Retrieves all movies with unique titles
         HashSet<String> uniqueTitles = new HashSet<>();
         ArrayList<Movie> uniqueMovies = new ArrayList<>();
         for (Movie movie : allMovies) {
@@ -698,6 +707,7 @@ public class ImageJFrame {
         JList<String> movieList = new JList<>(movieTitles.toArray(new String[0]));
         movieList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        //Selecting a movie title, will take you to the showtime page for that movie
         JButton nextButton = new JButton("Next");
         nextButton.addActionListener(e -> {
             String selectedTitle = movieList.getSelectedValue();
@@ -720,6 +730,7 @@ public class ImageJFrame {
             }
         });
 
+        //Search functionality, users can search based on partial word match or full word match
         searchButton.addActionListener(e -> {
             String query = searchField.getText();
             if (!query.isEmpty()) {
@@ -749,18 +760,21 @@ public class ImageJFrame {
         movieFrame.setVisible(true);
     }
         
+    //Movie showtime page
     private void showShowtimeSelectionPage(String title, ArrayList<Movie> movies) {
         JFrame showtimeFrame = new JFrame("Select Showtime");
     
         JPanel showtimePanel = new JPanel(new BorderLayout());
-        JPanel buttonPanel = new JPanel(new GridLayout(movies.size(), 1, 5, 5));  // Create a panel for showtime buttons
-    
+        JPanel buttonPanel = new JPanel(new GridLayout(movies.size(), 1, 5, 5)); 
+
+        //Get all showtimes for the movie that has been selected
         for (Movie movie : movies) {
             Showtime showtime = database.getShowtimeByMovie(movie.getMovieId());
     
             if (showtime != null) {
                 JButton showtimeButton = new JButton(showtime.getTime());
-    
+                
+                //Clicking on showtime will take user to seat selection page
                 showtimeButton.addActionListener(e -> {
                     showSeatSelectionPage(movie, movie.getMovieId(), showtime.getShowtimeID());
                     showtimeFrame.dispose();  
@@ -769,7 +783,7 @@ public class ImageJFrame {
             }
         }
     
-        showtimePanel.add(new JLabel("Select a Showtime for \"" + title + "\":"), BorderLayout.NORTH);
+        showtimePanel.add(new JLabel("Select a Showtime for " + title), BorderLayout.NORTH);
         showtimePanel.add(new JScrollPane(buttonPanel), BorderLayout.CENTER);
     
         showtimeFrame.add(showtimePanel);
@@ -785,8 +799,10 @@ public class ImageJFrame {
         JPanel panel = new JPanel(new GridLayout(5, 5, 5, 5));  // 5x5 grid for seats
         JButton[][] seatButtons = new JButton[5][5];
         
+        //Fetch seatmap for the movie
         SeatMap seatMap = movieController.getSeatMapForMovie(movieId);  
 
+        //Create a 5x5 grid of seats
         for (int row = 0; row < 5; ++row) {
             for (int col = 0; col < 5; ++col) {
                 Seat seat = seatMap.getSeats().get(row * 5 + col);  
@@ -794,6 +810,7 @@ public class ImageJFrame {
                 seatButtons[row][col] = new JButton("Seat " + (row * 5 + col + 1));
                 panel.add(seatButtons[row][col]);
 
+                //Set occupied seats as red and unclickable, and available seats as green
                 seatButtons[row][col].setOpaque(true);
                 if (!seat.getAvailability()) {
                     seatButtons[row][col].setBackground(Color.RED);
@@ -802,6 +819,7 @@ public class ImageJFrame {
                     seatButtons[row][col].setBackground(Color.GREEN);
                 }
 
+                //Clicking on a seat will make it yellow and unclickable and will take user to paymenet page
                 seatButtons[row][col].addActionListener((e) -> {
                     JButton selectedButton = (JButton) e.getSource();
                     selectedButton.setBackground(Color.YELLOW); 
@@ -827,6 +845,7 @@ public class ImageJFrame {
         constraints.insets = new Insets(10, 10, 10, 10);
         constraints.anchor = GridBagConstraints.WEST;
 
+        //Input fields for payment information
         JLabel movieLabel = new JLabel("Movie: " + selectedMovie.getTitle());
         JLabel seatLabel = new JLabel("Seat: " + selectedSeat);
         JLabel nameLabel = new JLabel("Cardholder Name:");
@@ -840,10 +859,10 @@ public class ImageJFrame {
         JLabel giftCardLabel = new JLabel("Gift Card:");
         JTextField giftCardField = new JTextField(20);
         JButton validateGiftCardButton = new JButton("Validate Gift Card");
-        JLabel totalPriceLabel = new JLabel("Total Price: $0.00"); // Total price label
+        JLabel totalPriceLabel = new JLabel("Total Price: $0.00"); 
         JButton confirmButton = new JButton("Confirm Payment");
 
-        // Autofill credit card information if user is logged in
+        //if user is already logged in, fill everything in
         if (currentUser != null) {
             PaymentInfo paymentInfo = database.getPaymentInfoForUser(currentUser.getUsername());
             if (paymentInfo != null) {
@@ -858,7 +877,7 @@ public class ImageJFrame {
             }
         }
 
-        // Add components to the panel
+        //Add input fields
         paymentPanel.add(movieLabel, constraints);
         constraints.gridy = 1;
         paymentPanel.add(seatLabel, constraints);
@@ -895,39 +914,42 @@ public class ImageJFrame {
         constraints.gridwidth = 2;
         paymentPanel.add(confirmButton, constraints);
 
-        // Set the initial ticket price
+        //set ticket price
         double ticketPrice = 0.0;
         try {
             ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
             totalPriceLabel.setText(String.format("Total Price: $%.2f", ticketPrice));
         } catch (SQLException ex) {
-            System.out.println("Error retrieving ticket price: " + ex);
+            System.out.println("Error getting ticket price: " + ex);
         }
         final double initialTicketPrice = ticketPrice; 
         
+        //Fields for gift card
         validateGiftCardButton.addActionListener((e) -> {
             String giftCardCode = giftCardField.getText();
 
             if (!giftCardCode.isEmpty()) {
                 try {
+                    //verify gift card validity
                     int giftCardID = Integer.parseInt(giftCardCode);
                     GiftCard giftCard = database.getGiftCardById(giftCardID);
                     if (giftCard != null && giftCard.getGiftCardBalance() > 0) {
                         double discountAmount = giftCard.getGiftCardBalance();
-                        JOptionPane.showMessageDialog(paymentFrame, "Gift card validated. Discount applied: $" + discountAmount, "Success", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(paymentFrame, "Gift card validated", "Success", JOptionPane.INFORMATION_MESSAGE);
                         double updatedPrice = initialTicketPrice - discountAmount;
                         totalPriceLabel.setText(String.format("Total Price: $%.2f", updatedPrice));
                     } else {
-                        JOptionPane.showMessageDialog(paymentFrame, "Invalid or empty gift card.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(paymentFrame, "Invalid gift card or gift card has insufficient funds", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (NumberFormatException | SQLException ex) {
-                    JOptionPane.showMessageDialog(paymentFrame, "Error validating gift card: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(paymentFrame, "Error validating gift card " + ex, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(paymentFrame, "Please enter a gift card code.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(paymentFrame, "Please enter gift card code.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
+        //confirm payment
         confirmButton.addActionListener((e) -> {
             String name = nameField.getText();
             String cardNumber = cardNumberField.getText();
@@ -935,10 +957,12 @@ public class ImageJFrame {
             String cvv = cvvField.getText();
             Integer giftCardID = null;
 
+            //check if fields have correct values
             if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
                 if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
                     boolean paymentSuccess = false;
-                    double finalTicketPrice = initialTicketPrice; // Use the effectively final variable
+                    double finalTicketPrice = initialTicketPrice; 
+                    //process payment and update credit card balance
                     if (currentUser != null) {
                         FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
                         PaymentController paymentController = new PaymentController(financialInstitution);
@@ -956,14 +980,15 @@ public class ImageJFrame {
                             database.insertCard(cardNumber, cvv, expiryDate, name);
                             paymentSuccess = true;
                         } catch (SQLException ex) {
-                            System.out.println("Error adding card to database: " + ex);
+                            System.out.println("Error adding card to database " + ex);
                         }
                     }
 
+                    //create new ticket and change seat availability if payment is sucessful
                     if (paymentSuccess) {
                         seat.setAvailability(false);
                         movieController.updateSeatAvailability(seat);
-                        Ticket ticket = new Ticket(selectedMovie, new Showtime(showtimeId, selectedMovie.getMovieId(), "2023-12-01 19:00:00"), seat);
+                        Ticket ticket = new Ticket(selectedMovie, new Showtime(showtimeId, selectedMovie.getMovieId(), database.getShowtimeByMovie(movieId).getTime()), seat);
                         double finalPrice = Double.parseDouble(totalPriceLabel.getText().replace("Total Price: $", ""));
                         try {
                             String username = null;
@@ -981,24 +1006,24 @@ public class ImageJFrame {
                         } catch (SQLException er) {
                             System.out.println("Error " + er);
                         }
-                        // Receipt generation
+                        //Generate receipt
                         String receiptContent = "Receipt:\n" +
                                 "Movie: " + selectedMovie.getTitle() + "\n" +
                                 "Seat: " + selectedSeat + "\n" +
                                 String.format("Total Price: $%.2f\n", finalPrice) +
-                                "Thank you for your purchase!";
+                                "Thank you";
                         try (BufferedWriter writer = new BufferedWriter(new FileWriter("receipt.txt"))) {
                             writer.write(receiptContent);
-                            JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked. Receipt SAVED.", "PAYMENT NOTIFICATION", JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked", "notification", JOptionPane.INFORMATION_MESSAGE);
                         } catch (IOException ioException) {
-                            JOptionPane.showMessageDialog(paymentFrame, "Error saving receipt to file.", "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(paymentFrame, "Error saving receipt to file", "Error", JOptionPane.ERROR_MESSAGE);
                         }
                         paymentFrame.dispose();
                     } else {
                         JOptionPane.showMessageDialog(paymentFrame, "Payment failed.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(paymentFrame, "Invalid card details or invalid date format", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(paymentFrame, "Invalid card details or invalid date", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 JOptionPane.showMessageDialog(paymentFrame, "Please fill in payment details.", "Error", JOptionPane.ERROR_MESSAGE);
