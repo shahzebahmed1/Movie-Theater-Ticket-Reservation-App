@@ -731,4 +731,29 @@ public class Database {
         }
         return null;
     }
+
+    public GiftCard getGiftCardById(int giftCardID) throws SQLException {
+        String query = "SELECT * FROM giftCards WHERE giftCardID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, giftCardID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    double balance = rs.getDouble("giftCardBalance");
+                    String expireDate = rs.getString("expireDate");
+                    return new GiftCard(giftCardID, balance, expireDate);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void deleteGiftCardById(int giftCardID) throws SQLException {
+        String query = "DELETE FROM giftCards WHERE giftCardID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, giftCardID);
+            ps.executeUpdate();
+        }
+    }
 }
