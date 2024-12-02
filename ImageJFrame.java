@@ -857,12 +857,25 @@ public class ImageJFrame {
             if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
                 if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
                     boolean paymentSuccess = false;
+                    double ticketPrice = 0.0;
+                    try {
+                        ticketPrice = database.getTicketPrice(selectedMovie.getMovieId());
+                        System.out.println("Ticket Price: " + ticketPrice); // Debug statement
+                    } catch (SQLException ex) {
+                        System.out.println("Error retrieving ticket price: " + ex);
+                    }
                     if (currentUser != null) {
                         FinancialInstitution financialInstitution = new FinancialInstitution(this.database);
                         PaymentController paymentController = new PaymentController(financialInstitution);
-                        double amount = 15.0;
                         PaymentInfo paymentInfo = new PaymentInfo(cardNumber, cvv, expiryDate, name);
-                        paymentSuccess = paymentController.processPayment(paymentInfo, amount);
+                        paymentSuccess = paymentController.processPayment(paymentInfo, ticketPrice);
+                        if (paymentSuccess) {
+                            try {
+                                database.updateUserBalance(currentUser.getUsername(), ticketPrice);
+                            } catch (SQLException ex) {
+                                System.out.println("Error updating user balance: " + ex);
+                            }
+                        }
                     } else {
                         try {
                             database.insertCard(cardNumber, cvv, expiryDate, name);

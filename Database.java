@@ -645,5 +645,33 @@ public class Database {
         return paymentInfo;
     }
     
+    public void updateUserBalance(String username, double amount) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+            String query = "UPDATE paymentinfo SET balance = balance - ? WHERE username = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setDouble(1, amount);
+                ps.setString(2, username);
+                int rowsUpdated = ps.executeUpdate();
+                if (rowsUpdated > 0) {
+                    System.out.println("Balance updated for user: " + username + " by amount: " + amount); // Debug statement
+                } else {
+                    System.out.println("Failed to update balance for user: " + username); // Debug statement
+                }
+            }
+        }
+    }
     
+    public double getTicketPrice(int movieId) throws SQLException {
+        String query = "SELECT ticketPrice FROM movies WHERE movieID = ?";
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, movieId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("ticketPrice");
+                }
+            }
+        }
+        return 0.0;
+    }
 }
