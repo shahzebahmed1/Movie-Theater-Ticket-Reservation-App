@@ -917,6 +917,7 @@ public class ImageJFrame {
             String cardNumber = cardNumberField.getText();
             String expiryDate = expiryField.getText();
             String cvv = cvvField.getText();
+            Integer giftCardID = null;
 
             if (!name.isEmpty() && !cardNumber.isEmpty() && !expiryDate.isEmpty() && !cvv.isEmpty()) {
                 if (cardNumber.length() == 16 && cvv.length() == 3 && expiryDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
@@ -958,7 +959,14 @@ public class ImageJFrame {
                             if (getCurrentUser() != null) {
                                 username = getCurrentUser().getUsername();
                             }
+                            if (!giftCardField.getText().isEmpty()) {
+                                giftCardID = Integer.parseInt(giftCardField.getText());
+                            }
                             database.insertTicket(ticket, username, cardNumber, new Date());
+                            if (giftCardID != null) {
+                                database.deleteGiftCardById(giftCardID);
+                                System.out.println("Gift card deleted from the database");
+                            }
                         } catch (SQLException er) {
                             System.out.println("Error " + er);
                         }
