@@ -959,8 +959,18 @@ public class ImageJFrame {
                         } catch (SQLException er) {
                             System.out.println("Error " + er);
                         }
-
-                        JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        // Receipt generation
+                        String receiptContent = "Receipt:\n" +
+                                "Movie: " + selectedMovie.getTitle() + "\n" +
+                                "Seat: " + selectedSeat + "\n" +
+                                "Total Price: $0.00\n" +  // Adjust to actual calculated price
+                                "Thank you for your purchase!";
+                        try (BufferedWriter writer = new BufferedWriter(new FileWriter("receipt.txt"))) {
+                            writer.write(receiptContent);
+                            JOptionPane.showMessageDialog(paymentFrame, "Payment successful! Seat has been booked. Receipt SAVED.", "PAYMENT NOTIFICATION", JOptionPane.INFORMATION_MESSAGE);
+                        } catch (IOException ioException) {
+                            JOptionPane.showMessageDialog(paymentFrame, "Error saving receipt to file.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
                         paymentFrame.dispose();
                     } else {
                         JOptionPane.showMessageDialog(paymentFrame, "Payment failed.", "Error", JOptionPane.ERROR_MESSAGE);
