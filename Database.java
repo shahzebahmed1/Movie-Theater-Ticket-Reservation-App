@@ -11,7 +11,7 @@ public class Database {
 
     final String USER;
     final String PASSWORD;
-    static final String DATABASE = "jdbc:mysql://localhost:3306/acmeplex";
+    static final String DATABASE = "jdbc:mysql://localhost:3306/acmeplex"; // should be consistent if you use the query given
 
     public Database(String user, String password) {
         this.USER = user;
@@ -27,19 +27,21 @@ public class Database {
         // db.getAllSeats();
         // db.getAllShowtimes();
         // db.getAllTickets();
-        // db.insertCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
-        // db.validateCard("1234567812345679", "333", "2025-12-31", "Bob Doe");
-        //db.getSeatsForMovie(1);
     }
     
+    // method to get movies from database
     public void getMovies() throws SQLException {
     	
+    	// establish connection to database
     	try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
     		
+    		// query to get all titles from movie table
     		String query = "SELECT title FROM movies";
     		
+    		// get the result of this query
     		try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
     			
+    			// print out all the titles to terminal
     			while (rs.next()) {
     				String title = rs.getString("title");
     				System.out.println(title);
@@ -55,17 +57,26 @@ public class Database {
     	
     }
     
-
+    // method to insert card into database
     public void insertCard(String cardNumber, String cvv, String expiryDate, String cardHolderName) throws SQLException {
+    	
+    	// establish connection to database
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to insert into payment info table
             String query = "INSERT INTO paymentInfo (cardNumber, cvv, expireDate, cardHolder, username) VALUES (?, ?, ?, ?, ?)";
+            
+            // fill in query with the variables
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, cardNumber);
             preparedStatement.setString(2, cvv);
             preparedStatement.setDate(3, java.sql.Date.valueOf(expiryDate));
             preparedStatement.setString(4, cardHolderName);
-            preparedStatement.setNull(5, java.sql.Types.VARCHAR); // Set username as null
+            preparedStatement.setNull(5, java.sql.Types.VARCHAR); // set username as null for now
+            
+            // check if any rows are changed, and print to terminal what happens
             int rowsChanged = preparedStatement.executeUpdate();
+            
             if (rowsChanged > 0) {
                 System.out.println("Payment information added successfully.");
             } else {
@@ -76,17 +87,24 @@ public class Database {
         }
     }
 
+    // method to validate card info
     public boolean validateCard(PaymentInfo paymentInfo) throws SQLException {
-        try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)){
+    	
+    	// establish connection to database
+        try(Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to see if the payment info exists in our table
             String query = "SELECT COUNT(*) FROM paymentInfo WHERE cardNumber = ? AND cvv = ? AND expireDate = ? AND cardHolder = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, paymentInfo.getCardNumber());
             preparedStatement.setString(2, paymentInfo.getCvv());
             preparedStatement.setDate(3, java.sql.Date.valueOf(paymentInfo.getExpiryDate()));
             preparedStatement.setString(4, paymentInfo.getCardHolderName());
-
+            
+            // get the result of this query
             ResultSet result = preparedStatement.executeQuery();
-
+            
+            // see if its valid
             if (result.next() && result.getInt(1) > 0) {
                 System.out.println("valid card information");
                 return true;
@@ -97,15 +115,22 @@ public class Database {
         return false;
     }
 
-
+    // method to get all the movies from our database
     public ArrayList<Movie> getAllMovies(boolean availability) throws SQLException {
+    	
+    	// create an arraylist of movies to return
         ArrayList<Movie> movies = new ArrayList<>();
-
+        
+        // establish connection to database
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// boolean is if we want to get public vs not public movies
             String query = "SELECT * FROM movies";
             if (availability){
                 query+= " WHERE availableToPublic = TRUE";
             }
+            
+            // get all of the data from the result set into the arraylist
             try (PreparedStatement preparedStatement = connection.prepareStatement(query); ResultSet result = preparedStatement.executeQuery()) {
                 while (result.next()) {
                     int movieID = result.getInt("movieID");
@@ -127,14 +152,20 @@ public class Database {
         return movies;
 
     }
-
+    
+    // method to remove movies from database
     public void removeMovie(int movieID) throws SQLException {
-        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
-            String disableFKChecks = "SET FOREIGN_KEY_CHECKS = 0;";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(disableFKChecks)) {
+    	
+    	// establish connection to database
+        try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) 
+        {
+        	// disable foreign key checks
+            String disableForeignKeyChecks = "SET FOREIGN_KEY_CHECKS = 0;";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(disableForeignKeyChecks)) {
                 preparedStatement.executeUpdate();
             }
-    
+            
+            // delete all tickets associated with the ID
             String deleteTicketsQuery = "DELETE FROM tickets WHERE movieID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(deleteTicketsQuery)) {
                 preparedStatement.setInt(1, movieID);
@@ -145,7 +176,8 @@ public class Database {
                     System.out.println("Tickets not found");
                 }
             }
-    
+            
+            // delete all seats associated with the ID
             String deleteSeatsQuery = "DELETE FROM seats WHERE movieID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSeatsQuery)) {
                 preparedStatement.setInt(1, movieID);
@@ -156,7 +188,8 @@ public class Database {
                     System.out.println("Seats not found");
                 }
             }
-    
+            
+            // delete all movies associated with the ID
             String deleteMovieQuery = "DELETE FROM movies WHERE movieID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(deleteMovieQuery)) {
                 preparedStatement.setInt(1, movieID);
@@ -167,9 +200,10 @@ public class Database {
                     System.out.println("Movie not found");
                 }
             }
-    
-            String enableFKChecks = "SET FOREIGN_KEY_CHECKS = 1;";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(enableFKChecks)) {
+            
+            // re-enable the foreign key checks
+            String enableForeignKeyChecks = "SET FOREIGN_KEY_CHECKS = 1;";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(enableForeignKeyChecks)) {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -177,34 +211,46 @@ public class Database {
         }
     }
 
+    // method to add movie to database
     public void addMovie(String title, String genre, int duration, boolean availability, String showTime, double ticketPrice) {
+    	
+    	// queries to add movie, showtime and seat at the same time because theyre all related
         String movieQuery = "INSERT INTO movies (title, duration, genre, availableToPublic, preReleasedTicketsLeft, ticketPrice) VALUES (?, ?, ?, ?, ?, ?)";
         String showtimeQuery = "INSERT INTO showtimes (movieID, time) VALUES (?, ?)";
         String seatQuery = "INSERT INTO seats (availability, seat_row, seat_column, movieID) VALUES (?, ?, ?, ?)";
         
+        // establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD);
+        	
+        	 // create prepared statements
              PreparedStatement movieStatement = connection.prepareStatement(movieQuery, PreparedStatement.RETURN_GENERATED_KEYS);
              PreparedStatement showtimeStatement = connection.prepareStatement(showtimeQuery);
              PreparedStatement seatStatement = connection.prepareStatement(seatQuery)) {
-    
+        	
+        	// set parameters for movie
             movieStatement.setString(1, title);
             movieStatement.setInt(2, duration);
             movieStatement.setString(3, genre);
             movieStatement.setBoolean(4, availability);
             movieStatement.setInt(5, 2);
             movieStatement.setDouble(6, ticketPrice);
-    
+            
             int rowsAffected = movieStatement.executeUpdate();
-    
+            
+            // if movie is created properly move onto the showtimes and seats
             if (rowsAffected > 0) {
+            	
                 try (ResultSet generatedKeys = movieStatement.getGeneratedKeys()) {
+                	
                     if (generatedKeys.next()) {
                         int movieID = generatedKeys.getInt(1);
-    
+                        
+                        // set parameters for the showtime
                         showtimeStatement.setInt(1, movieID);
                         showtimeStatement.setString(2, showTime);
                         showtimeStatement.executeUpdate();
-    
+                        
+                        // add 25 seats into our database
                         for (int row = 1; row <= 5; row++) {
                             for (char column = 'A'; column <= 'E'; column++) {
                                 seatStatement.setBoolean(1, true);
@@ -226,15 +272,20 @@ public class Database {
     }
     
     
-    
-    
-
+    // method to update a movie
     public void updateMovieInDatabase(Movie movie) throws SQLException{
+    	
+    	// establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to update how many tickets are left
             String query = "UPDATE movies SET preReleasedTicketsleft = ? WHERE movieID = ?";
+            
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, movie.getPreReleasedTickets());
                 preparedStatement.setInt(2, movie.getMovieId());
+                
+                // update the data and check if it updated properly
                 int rowsUpdated = preparedStatement.executeUpdate();
                 if (rowsUpdated > 0) {
                     System.out.println("Update pre-release ticket number for movie");
@@ -247,10 +298,17 @@ public class Database {
         }
     }
 
+    // method to get all users from the database
     public void getAllUsers() throws SQLException {
+    	
+    	// establish a connection
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
+        	
+        	// query to get all the users
             String query = "SELECT * FROM users";
             try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+            	
+            	// from the result set print out the information of every user
                 while (rs.next()) {
                     int userID = rs.getInt("userID");
                     String name = rs.getString("name");
@@ -267,6 +325,7 @@ public class Database {
         }
     }
 
+    // method to get all the seats
     public void getAllSeats() throws SQLException {
         try (Connection connection = DriverManager.getConnection(DATABASE, USER, PASSWORD)) {
             String query = "SELECT * FROM seats";
