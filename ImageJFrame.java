@@ -411,13 +411,14 @@ public class ImageJFrame {
     private void showInvoiceLookupFrame() {
         JFrame invoiceFrame = new JFrame("Invoice Lookup");
 
-        JPanel invoicePanel = new JPanel(new GridLayout(5, 1, 10, 10)); // Adjusted to 5 rows
+        JPanel invoicePanel = new JPanel(new GridLayout(5, 1, 10, 10)); 
         JLabel invoiceLabel = new JLabel("Enter Invoice (ticketID) Number:");
         JTextField invoiceField = new JTextField();
         JLabel cardNumberLabel = new JLabel("Confirm Card Number Used to Pay:");
         JTextField cardNumberField = new JTextField();
         JButton lookupButton = new JButton("Lookup");
 
+        //Add input fields
         invoicePanel.add(invoiceLabel);
         invoicePanel.add(invoiceField);
         invoicePanel.add(cardNumberLabel);
@@ -512,6 +513,7 @@ public class ImageJFrame {
         JButton deleteMovieButton = new JButton("Delete Movie");        
         JButton deleteUserButton = new JButton("Delete User");
 
+        //Add buttons
         adminPanel.add(addMovieButton);
         adminPanel.add(deleteMovieButton);
         adminPanel.add(deleteUserButton);
@@ -529,6 +531,7 @@ public class ImageJFrame {
     private void addMovie() {
         JPanel panel = new JPanel(new GridLayout(6, 2, 5, 5));  // Updated to 6 rows
 
+        //Create and add input fields
         JLabel titleLabel = new JLabel("Movie Title:");
         JTextField titleField = new JTextField();
         JLabel showtimeLabel = new JLabel("Showtime (YYYY-MM-DD HH:MM:SS):");
@@ -564,6 +567,7 @@ public class ImageJFrame {
             String durationInput = durationField.getText().trim();
             String priceInput = priceField.getText().trim();
 
+            //Check if input values are correct and not empty
             if (!title.isEmpty() && isValidTime(showtime) && (availableToPublicInput.equals("yes") || availableToPublicInput.equals("no"))
                     && !genre.isEmpty() && !priceInput.isEmpty()) {
                 
@@ -571,8 +575,8 @@ public class ImageJFrame {
                     int duration = Integer.parseInt(durationInput); 
                     double ticketPrice = Double.parseDouble(priceInput);
                     if (duration > 0 && ticketPrice > 0) {
-                        boolean availableToPublic = availableToPublicInput.equals("yes");  
-                        database.addMovie(title, genre, duration, availableToPublic, showtime, ticketPrice);
+                        boolean availableToPublic = availableToPublicInput.equals("yes");  //changes "yes" or "no" to boolean
+                        database.addMovie(title, genre, duration, availableToPublic, showtime, ticketPrice); //Add a new movie from the inputs
                         JOptionPane.showMessageDialog(mainFrame, "Movie added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(mainFrame,"Duration and price must be positive", "Error", JOptionPane.ERROR_MESSAGE);
@@ -586,7 +590,7 @@ public class ImageJFrame {
         }
     }
 
-
+    //Function to check if the time given is in the correct format
     private boolean isValidTime(String time) {
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         try {
